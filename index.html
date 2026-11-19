@@ -7,26 +7,28 @@
   <style>
     :root { --primary: #d97706; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 115px; }
-    header { background: var(--primary); color: #fff; padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-    header h1 { margin: 0; font-size: 1.15rem; }
-    .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-    .btn-light { background: rgba(255,255,255,.2); color: #fff; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 130px; }
+    header { background: var(--primary); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 25; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    header h1 { margin: 0; font-size: 1.1rem; }
+    .sub-tag { font-size: 0.78rem; opacity: 0.92; display: block; margin-top: 2px; }
+    .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+    .btn-light { background: rgba(255,255,255,.22); color: #fff; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-dark { background: #1e293b; color: #fff; }
-    .btn-danger { background: #dc2626; color: #fff; padding: 6px 10px; font-size: 0.8rem; }
-    .container { max-width: 720px; margin: 16px auto; padding: 0 14px; }
-    .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-weight: 600; }
+    .btn-ok { background: #15803d; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
+    .btn-danger { background: #dc2626; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
+    .btn-sec { background: #e2e8f0; color: #0f172a; padding: 6px 10px; font-size: 0.82rem; }
+    .container { max-width: 760px; margin: 14px auto; padding: 0 14px; }
+    .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; }
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
-    .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88rem; color: var(--muted); border: 1px solid #e2e8f0; }
-    .offers-box { margin-bottom: 14px; }
+    .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.86rem; color: var(--muted); border: 1px solid #e2e8f0; }
+    .offers-box { margin-bottom: 12px; }
     .offer-card { background: linear-gradient(135deg, #fffbeb, #ffffff); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
     .offer-title { font-weight: 800; color: var(--primary); margin-bottom: 4px; }
-    .offer-desc { font-size: 0.86rem; color: var(--text); }
-    .offer-price { font-weight: 700; margin-top: 4px; font-size: 0.9rem; }
-    .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
-    .cat-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 999px; padding: 6px 14px; white-space: nowrap; cursor: pointer; }
+    .search-box { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; font-size: 0.95rem; background: #fff; }
+    .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+    .cat-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 999px; padding: 6px 14px; white-space: nowrap; cursor: pointer; font-size: 0.88rem; }
     .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .item-card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
     .item-left { display: flex; align-items: center; gap: 12px; }
@@ -36,31 +38,97 @@
     .item-price { font-weight: 700; color: var(--primary); }
     .qty-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
-    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,.08); }
-    .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid #e2e8f0; }
-    input, select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; }
+    .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 14px; border: 1px solid #e2e8f0; }
+    input, select, textarea { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; font-size: 0.9rem; }
     input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
     .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
+    .checkout-box { background: var(--card); border-radius: 12px; padding: 14px; margin-top: 14px; border: 1px solid #cbd5e1; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,.08); }
+    .admin-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
+    .tab-btn { background: #f1f5f9; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+    .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
+    .order-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fff; }
+    .st-pending { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
+    .st-completed { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
+    .st-rejected { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
     .sec-title { margin: 16px 0 8px; font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   </style>
 </head>
 <body>
   <header>
-    <h1 id="storeName">جاري التحميل...</h1>
+    <div>
+      <h1 id="storeName">جاري التحميل...</h1>
+      <span class="sub-tag" id="storeTypeTag"></span>
+    </div>
     <button class="btn btn-light" onclick="toggleAdmin()">إدارة المحل</button>
   </header>
 
   <div class="container">
     <div id="subBanner"></div>
+    <div id="closedBanner"></div>
+
     <div id="storeContent">
       <div id="storeMeta" class="store-meta" style="display:none;"></div>
       <div id="offersBox" class="offers-box" style="display:none;"></div>
+      <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن صنف أو منتج..." oninput="renderMenu()" style="display:none;" />
       <div class="cats" id="catsBar"></div>
       <div id="itemsList"></div>
+
+      <!-- بيانات الزبون، الدفع، الكوبون، والموعد -->
+      <div id="checkoutBox" class="checkout-box" style="display:none;">
+        <h3 style="margin-top:0;">بيانات الطلب والدفع</h3>
+        <label>رقم الهاتف (يُحفظ تلقائياً ويفعّل خصم الطلبات المتكررة):</label>
+        <input type="tel" id="custPhone" placeholder="مثال: 09xxxxxxxx" oninput="checkCustomerLoyalty()" />
+        <div id="loyaltyMsg" style="font-size:0.85rem;color:#15803d;font-weight:700;margin-bottom:8px;"></div>
+
+        <label>الاسم الكامل:</label>
+        <input type="text" id="custName" placeholder="اكتب اسمك" />
+
+        <div id="deliveryFields">
+          <label>العنوان التفصيلي:</label>
+          <input type="text" id="custAddress" placeholder="الحي، الشارع، البناء..." />
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+            <button type="button" class="btn btn-sec" onclick="shareGPS()">📍 مشاركة موقعي الحالي (GPS)</button>
+            <span id="gpsStatus" style="font-size:0.8rem;color:var(--muted);"></span>
+          </div>
+          <input type="hidden" id="custGPS" />
+        </div>
+
+        <div id="barberFields" style="display:none;">
+          <label>تاريخ الموعد:</label>
+          <input type="date" id="bookDate" />
+          <label>الوقت المفضل:</label>
+          <input type="time" id="bookTime" />
+        </div>
+
+        <label>كوبون خصم (إن وجد):</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="couponCode" placeholder="أدخل كود الخصم" style="margin:0;" />
+          <button type="button" class="btn btn-dark" onclick="applyCoupon()">تطبيق</button>
+        </div>
+        <div id="couponMsg" style="font-size:0.84rem;margin:6px 0 10px;font-weight:600;"></div>
+
+        <label>طريقة الدفع:</label>
+        <select id="payMethod" onchange="toggleShamCashBox()">
+          <option value="manual">دفع يدوي / عند الاستلام</option>
+          <option value="shamcash">عبر شام كاش (ShamCash)</option>
+        </select>
+
+        <div id="shamCashBox" style="display:none;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin-bottom:10px;">
+          <div id="shamCashInfo" style="font-size:0.86rem;font-weight:700;margin-bottom:6px;"></div>
+          <label>رقم عملية / مرجع تحويل شام كاش:</label>
+          <input type="text" id="shamCashRef" placeholder="أدخل رقم العملية بعد التحويل" />
+        </div>
+      </div>
     </div>
 
+    <!-- لوحة إدارة المحل -->
     <div id="adminPanel" class="panel" style="display:none;">
-      <h3>لوحة إدارة المحل</h3>
+      <h3 style="margin-top:0;">لوحة إدارة المحل</h3>
       <div id="adminLogin">
         <label>رمز PIN الخاص بالمحل:</label>
         <input type="password" id="pinInput" placeholder="أدخل رمز PIN" />
@@ -68,16 +136,16 @@
         <input type="password" id="ghTokenInput" placeholder="ghp_..." />
         <button class="btn btn-dark" onclick="unlockAdmin()">دخول</button>
       </div>
-      <div id="adminEditor" style="display:none;"></div>
+      <div id="adminWorkspace" style="display:none;"></div>
     </div>
   </div>
 
   <div class="cart-bar" id="cartBar" style="display:none;">
     <div>
       <div>الإجمالي: <strong id="cartTotal">0</strong> <span id="currLabel"></span></div>
-      <small id="cartCount" style="color:var(--muted)">0 أصناف</small>
+      <small id="cartSummarySub" style="color:var(--muted)"></small>
     </div>
-    <button class="btn btn-primary" onclick="sendOrder()">إرسال الطلب</button>
+    <button class="btn btn-primary" onclick="submitOrder()">تأكيد وإرسال الطلب</button>
   </div>
 
   <script>
@@ -86,11 +154,22 @@
     const params = new URLSearchParams(location.search);
     const storeId = params.get("store") || "bakery1";
 
+    const TYPE_LABELS = {
+      bakery: "معجنات ومخبوزات",
+      market: "سوبر ماركت ومواد غذائية",
+      barber: "صالون حلاقة وحجز مواعيد",
+      tobacco: "مركز تبغ ومعسل"
+    };
+
     let dbData = null;
     let store = null;
     let activeCat = "الكل";
     let cart = {};
     let isSuspended = false;
+    let appliedCoupon = null;
+    let loyaltyDiscountPct = 0;
+    let activeAdminTab = "orders";
+    let ordersFilter = "all";
 
     async function init() {
       try {
@@ -106,10 +185,13 @@
           document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">لم يتم العثور على المتجر: ${storeId}</div>`;
           return;
         }
+        ensureStoreStructure();
         applyTheme();
         renderMeta();
         renderOffers();
         checkSubscription();
+        checkOpenStatus();
+        loadSavedCustomerLocal();
         renderMenu();
       } catch (e) {
         document.getElementById("storeName").textContent = "تعذر التحميل";
@@ -117,43 +199,71 @@
       }
     }
 
+    function ensureStoreStructure() {
+      store.info = store.info || {};
+      store.items = store.items || [];
+      store.offers = store.offers || [];
+      store.categories = store.categories || ["عام"];
+      store.customers = store.customers || {};
+      store.orders = store.orders || [];
+      store.promos = store.promos || {
+        loyalty: { enabled: false, every_n_orders: 3, discount_percent: 10 },
+        coupons: []
+      };
+      store.promos.loyalty = store.promos.loyalty || { enabled: false, every_n_orders: 3, discount_percent: 10 };
+      store.promos.coupons = store.promos.coupons || [];
+    }
+
     function applyTheme() {
+      const t = store.info.type || "bakery";
       document.title = store.info.name;
       document.getElementById("storeName").textContent = store.info.name;
+      document.getElementById("storeTypeTag").textContent = TYPE_LABELS[t] || "";
       document.documentElement.style.setProperty("--primary", store.info.theme_color || "#d97706");
       document.getElementById("currLabel").textContent = store.info.currency || "";
+
+      if (t === "market" || t === "tobacco") {
+        document.getElementById("searchInput").style.display = "block";
+      }
+      if (t === "barber") {
+        document.getElementById("deliveryFields").style.display = "none";
+        document.getElementById("barberFields").style.display = "block";
+        const bd = document.getElementById("bookDate");
+        if (bd && !bd.value) bd.valueAsDate = new Date();
+      }
+
+      const sc = store.info.shamcash || {};
+      document.getElementById("shamCashInfo").textContent =
+        `حساب شام كاش: ${sc.account_code || "غير محدد"} | الاسم: ${sc.account_name || ""} ${sc.notes ? "(" + sc.notes + ")" : ""}`;
     }
 
     function renderMeta() {
       const metaEl = document.getElementById("storeMeta");
       const loc = store.info.location_text || "";
       const phone = store.info.phone_whatsapp || "";
+      const delType = store.info.delivery_type || "fixed";
       const fee = Number(store.info.delivery_fee || 0);
       let parts = [];
-      if (loc) parts.push(`📍 الموقع: ${loc}`);
-      if (phone) parts.push(`📞 واتساب: ${phone}`);
-      if (fee > 0) parts.push(`🚚 التوصيل: ${fee.toLocaleString()} ${store.info.currency || ""}`);
+      if (loc) parts.push(`📍 ${loc}`);
+      if (phone) parts.push(`📞 ${phone}`);
+      if ((store.info.type || "bakery") !== "barber") {
+        parts.push(delType === "free" ? "🚚 توصيل مجاني" : `🚚 توصيل: ${fee.toLocaleString()} ${store.info.currency || ""}`);
+      }
       if (parts.length > 0) {
         metaEl.style.display = "block";
         metaEl.innerHTML = parts.join(" &nbsp;|&nbsp; ");
-      } else {
-        metaEl.style.display = "none";
       }
     }
 
     function renderOffers() {
       const box = document.getElementById("offersBox");
-      const offers = store.offers || [];
-      if (!offers.length) {
-        box.style.display = "none";
-        return;
-      }
+      if (!store.offers.length) { box.style.display = "none"; return; }
       box.style.display = "block";
-      box.innerHTML = offers.map(o => `
+      box.innerHTML = store.offers.map(o => `
         <div class="offer-card">
-          <div class="offer-title">🔥 عرض خاص: ${o.title}</div>
-          <div class="offer-desc">${o.desc || ""}</div>
-          ${o.price ? `<div class="offer-price">سعر العرض: ${Number(o.price).toLocaleString()} ${store.info.currency || ""}</div>` : ""}
+          <div class="offer-title">🔥 عرض: ${o.title}</div>
+          <div style="font-size:0.86rem;">${o.desc || ""}</div>
+          ${o.price ? `<div style="font-weight:700;margin-top:4px;">سعر العرض: ${Number(o.price).toLocaleString()} ${store.info.currency || ""}</div>` : ""}
         </div>
       `).join("");
     }
@@ -172,7 +282,7 @@
 
       if (diffDays < -graceDays || sub.status === "suspended") {
         isSuspended = true;
-        banner.innerHTML = `<div class="alert alert-err">تم إيقاف صفحة المتجر مؤقتاً لانتهاء فترة الاشتراك والسماح. يرجى التواصل لتجديد الاشتراك.</div>`;
+        banner.innerHTML = `<div class="alert alert-err">تم إيقاف صفحة المتجر مؤقتاً لانتهاء فترة الاشتراك والسماح.</div>`;
         document.getElementById("storeContent").style.display = "none";
         document.getElementById("cartBar").style.display = "none";
       } else if (diffDays <= 0) {
@@ -182,15 +292,103 @@
       }
     }
 
+    function checkOpenStatus() {
+      if (isSuspended) return;
+      const cb = document.getElementById("closedBanner");
+      if (store.info.is_open === false) {
+        cb.innerHTML = `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً. يمكنك تصفح القائمة.</div>`;
+      } else {
+        cb.innerHTML = "";
+      }
+    }
+
+    function loadSavedCustomerLocal() {
+      const saved = JSON.parse(localStorage.getItem("smart_store_customer_" + storeId) || "null");
+      if (!saved) return;
+      if (saved.phone) document.getElementById("custPhone").value = saved.phone;
+      if (saved.name) document.getElementById("custName").value = saved.name;
+      if (saved.address) document.getElementById("custAddress").value = saved.address;
+      if (saved.gps) {
+        document.getElementById("custGPS").value = saved.gps;
+        document.getElementById("gpsStatus").textContent = "تم حفظ الموقع مسبقاً ✓";
+      }
+      checkCustomerLoyalty();
+    }
+
+    function checkCustomerLoyalty() {
+      const phone = document.getElementById("custPhone").value.trim();
+      const msgEl = document.getElementById("loyaltyMsg");
+      loyaltyDiscountPct = 0;
+      const loy = store.promos.loyalty || {};
+      if (!phone || !loy.enabled || !loy.every_n_orders) {
+        msgEl.textContent = "";
+        updateTotals();
+        return;
+      }
+      const cust = store.customers[phone];
+      const completedCount = cust ? Number(cust.completed_orders || 0) : 0;
+      const nextOrderNum = completedCount + 1;
+      if (nextOrderNum % Number(loy.every_n_orders) === 0) {
+        loyaltyDiscountPct = Number(loy.discount_percent || 0);
+        msgEl.textContent = `🎉 زبون مميز! هذا طلبك رقم (${nextOrderNum}) ويستحق خصم ولاء ${loyaltyDiscountPct}% تلقائياً.`;
+      } else {
+        const rem = Number(loy.every_n_orders) - (nextOrderNum % Number(loy.every_n_orders));
+        msgEl.textContent = `عدد طلباتك المنفذة: ${completedCount} (يتبقى ${rem} طلب للحصول على خصم ${loy.discount_percent}%).`;
+      }
+      updateTotals();
+    }
+
+    function shareGPS() {
+      const st = document.getElementById("gpsStatus");
+      if (!navigator.geolocation) { st.textContent = "المتصفح لا يدعم GPS"; return; }
+      st.textContent = "جاري تحديد الموقع...";
+      navigator.geolocation.getCurrentPosition(pos => {
+        const link = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        document.getElementById("custGPS").value = link;
+        st.textContent = "تم تحديد الموقع ✓";
+      }, () => {
+        st.textContent = "تعذر الوصول للموقع";
+      });
+    }
+
+    function applyCoupon() {
+      const code = document.getElementById("couponCode").value.trim().toUpperCase();
+      const msg = document.getElementById("couponMsg");
+      appliedCoupon = null;
+      if (!code) { msg.textContent = ""; updateTotals(); return; }
+      const found = (store.promos.coupons || []).find(c => c.active && String(c.code || "").toUpperCase() === code);
+      if (!found) {
+        msg.style.color = "#b91c1c";
+        msg.textContent = "كوبون غير صالح أو غير مفعّل.";
+      } else {
+        appliedCoupon = found;
+        msg.style.color = "#15803d";
+        msg.textContent = `تم تفعيل الكوبون (${found.code}) بخصم ${found.type === "percent" ? found.value + "%" : Number(found.value).toLocaleString() + " " + (store.info.currency || "")}.`;
+      }
+      updateTotals();
+    }
+
+    function toggleShamCashBox() {
+      const m = document.getElementById("payMethod").value;
+      document.getElementById("shamCashBox").style.display = m === "shamcash" ? "block" : "none";
+    }
+
     function renderMenu() {
       if (isSuspended) return;
-      const cats = ["الكل", ...(store.categories || [])];
-      const catsBar = document.getElementById("catsBar");
-      catsBar.innerHTML = cats.map(c => `<button class="cat-btn ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join("");
+      const cats = ["الكل", ...store.categories];
+      document.getElementById("catsBar").innerHTML = cats.map(c =>
+        `<button class="cat-btn ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`
+      ).join("");
 
-      const filtered = (store.items || []).filter(i => activeCat === "الكل" || i.category === activeCat);
+      const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+      const filtered = store.items.filter(i => {
+        const mc = activeCat === "الكل" || i.category === activeCat;
+        const ms = !q || i.name.toLowerCase().includes(q) || (i.desc || "").toLowerCase().includes(q);
+        return mc && ms;
+      });
+
       document.getElementById("itemsList").innerHTML = filtered.map(item => {
-        const q = cart[item.id] || 0;
+        const qty = cart[item.id] || 0;
         const imgTag = item.image ? `<img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.style.display='none'" />` : "";
         return `
           <div class="item-card">
@@ -205,14 +403,14 @@
             <div class="qty-box">
               ${item.available ? `
                 <button class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
-                <span>${q}</span>
+                <span>${qty}</span>
                 <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
               ` : `<small style="color:var(--muted)">غير متوفر</small>`}
             </div>
           </div>
         `;
       }).join("");
-      updateCart();
+      updateTotals();
     }
 
     function setCat(c) { activeCat = c; renderMenu(); }
@@ -224,39 +422,89 @@
       renderMenu();
     }
 
-    function updateCart() {
-      if (isSuspended) return;
+    function calculateTotals() {
       let count = 0, subtotal = 0;
+      const lines = [];
       for (const [id, qty] of Object.entries(cart)) {
-        const item = (store.items || []).find(x => x.id === id);
-        if (item) { count += qty; subtotal += item.price * qty; }
-      }
-      const bar = document.getElementById("cartBar");
-      if (count === 0) { bar.style.display = "none"; return; }
-      const fee = Number(store.info.delivery_fee || 0);
-      bar.style.display = "flex";
-      document.getElementById("cartCount").textContent = `${count} أصناف (التوصيل: ${fee.toLocaleString()})`;
-      document.getElementById("cartTotal").textContent = (subtotal + fee).toLocaleString();
-    }
-
-    function sendOrder() {
-      let lines = [`طلب جديد من *${store.info.name}*:`];
-      let subtotal = 0;
-      for (const [id, qty] of Object.entries(cart)) {
-        const item = (store.items || []).find(x => x.id === id);
-        if (item) {
-          const lineTotal = item.price * qty;
-          subtotal += lineTotal;
-          lines.push(`• ${item.name} × ${qty} = ${lineTotal.toLocaleString()} ${store.info.currency}`);
+        const it = store.items.find(x => x.id === id);
+        if (it) {
+          count += qty;
+          const lineSum = Number(it.price) * qty;
+          subtotal += lineSum;
+          lines.push({ id: it.id, name: it.name, qty, price: Number(it.price), total: lineSum });
         }
       }
-      const fee = Number(store.info.delivery_fee || 0);
-      lines.push(`التوصيل: ${fee.toLocaleString()} ${store.info.currency}`);
-      if (store.info.location_text) lines.push(`الموقع: ${store.info.location_text}`);
-      lines.push(`*الإجمالي: ${(subtotal + fee).toLocaleString()} ${store.info.currency}*`);
-      const phone = (store.info.phone_whatsapp || "").replace(/\D/g, "");
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
-      window.open(url, "_blank");
+      let discount = 0;
+      if (loyaltyDiscountPct > 0) discount += Math.round((subtotal * loyaltyDiscountPct) / 100);
+      if (appliedCoupon) {
+        if (appliedCoupon.type === "percent") discount += Math.round((subtotal * Number(appliedCoupon.value || 0)) / 100);
+        else discount += Number(appliedCoupon.value || 0);
+      }
+      if (discount > subtotal) discount = subtotal;
+
+      const isBarber = (store.info.type || "bakery") === "barber";
+      const deliveryFee = isBarber ? 0 : (store.info.delivery_type === "free" ? 0 : Number(store.info.delivery_fee || 0));
+      const finalTotal = Math.max(0, subtotal - discount + deliveryFee);
+      return { count, subtotal, discount, deliveryFee, finalTotal, lines };
+    }
+
+    function updateTotals() {
+      if (isSuspended) return;
+      const t = calculateTotals();
+      const bar = document.getElementById("cartBar");
+      const checkout = document.getElementById("checkoutBox");
+      if (t.count === 0) {
+        bar.style.display = "none";
+        checkout.style.display = "none";
+        return;
+      }
+      bar.style.display = "flex";
+      checkout.style.display = "block";
+      document.getElementById("cartTotal").textContent = t.finalTotal.toLocaleString();
+      document.getElementById("cartSummarySub").textContent =
+        `${t.count} أصناف | خصم: ${t.discount.toLocaleString()} | توصيل: ${t.deliveryFee.toLocaleString()}`;
+    }
+
+    function submitOrder() {
+      if (store.info.is_open === false) {
+        alert("المتجر مغلق مؤقتاً لاستقبال الطلبات.");
+        return;
+      }
+      const phone = document.getElementById("custPhone").value.trim();
+      const name = document.getElementById("custName").value.trim();
+      const address = document.getElementById("custAddress").value.trim();
+      const gps = document.getElementById("custGPS").value.trim();
+      const payMethod = document.getElementById("payMethod").value;
+      const shamRef = document.getElementById("shamCashRef").value.trim();
+      const isBarber = (store.info.type || "bakery") === "barber";
+      const bookDate = document.getElementById("bookDate").value;
+      const bookTime = document.getElementById("bookTime").value;
+
+      if (!phone || !name) { alert("يرجى إدخال رقم الهاتف والاسم."); return; }
+      if (!isBarber && !address && !gps) { alert("يرجى إدخال العنوان أو مشاركة الموقع GPS."); return; }
+      if (isBarber && (!bookDate || !bookTime)) { alert("يرجى اختيار تاريخ ووقت الموعد."); return; }
+      if (payMethod === "shamcash" && !shamRef) { alert("يرجى إدخال رقم عملية تحويل شام كاش."); return; }
+
+      localStorage.setItem("smart_store_customer_" + storeId, JSON.stringify({ phone, name, address, gps }));
+
+      const t = calculateTotals();
+      const curr = store.info.currency || "";
+      let msg = [
+        `طلب جديد من *${store.info.name}*`,
+        `الزبون: ${name} (${phone})`,
+        isBarber ? `موعد الحجز: ${bookDate} - ${bookTime}` : `العنوان: ${address || "-"}`,
+        gps ? `الموقع GPS: ${gps}` : "",
+        `طريقة الدفع: ${payMethod === "shamcash" ? "شام كاش (مرجع: " + shamRef + ")" : "يدوي / عند الاستلام"}`,
+        `--- الأصناف ---`,
+        ...t.lines.map(l => `• ${l.name} × ${l.qty} = ${l.total.toLocaleString()} ${curr}`),
+        t.discount > 0 ? `الخصم: -${t.discount.toLocaleString()} ${curr}` : "",
+        !isBarber ? `التوصيل: ${t.deliveryFee.toLocaleString()} ${curr}` : "",
+        `*الإجمالي: ${t.finalTotal.toLocaleString()} ${curr}*`
+      ].filter(Boolean).join("\n");
+
+      const wp = (store.info.phone_whatsapp || "").replace(/\D/g, "");
+      if (wp) window.open(`https://wa.me/${wp}?text=${encodeURIComponent(msg)}`, "_blank");
+      else alert("تم تجهيز الطلب. يرجى التواصل مع إدارة المحل لتأكيده.");
     }
 
     function toggleAdmin() {
@@ -269,144 +517,371 @@
     function unlockAdmin() {
       const pin = document.getElementById("pinInput").value.trim();
       const tok = document.getElementById("ghTokenInput").value.trim();
-      if (pin !== String(store.subscription.admin_pin)) {
+      if (pin !== String((store.subscription && store.subscription.admin_pin) || "")) {
         alert("رمز PIN غير صحيح");
         return;
       }
       if (tok) localStorage.setItem("gh_gist_token", tok);
       document.getElementById("adminLogin").style.display = "none";
-      renderAdminEditor();
+      renderAdminWorkspace();
     }
 
-    function renderAdminEditor() {
-      const ed = document.getElementById("adminEditor");
-      ed.style.display = "block";
-      const cats = store.categories || ["عام"];
+    function setAdminTab(tab) {
+      activeAdminTab = tab;
+      renderAdminWorkspace();
+    }
 
-      let html = `
-        <h4 class="sec-title">هوية المحل، التواصل والموقع</h4>
-        <label>اسم المحل:</label>
-        <input type="text" id="adm_name" value="${store.info.name || ""}" />
-        <label>لون المحل الأساسي:</label>
-        <input type="color" id="adm_color" value="${store.info.theme_color || "#d97706"}" />
-        <label>رقم الواتساب (مع رمز الدولة، مثال: 9639xxxxxxxx):</label>
-        <input type="text" id="adm_phone" value="${store.info.phone_whatsapp || ""}" />
-        <label>موقع المحل / العنوان:</label>
-        <input type="text" id="adm_loc" value="${store.info.location_text || ""}" placeholder="مثال: دمشق - المزة أو رابط الخريطة" />
-        <label>رسوم التوصيل:</label>
-        <input type="number" id="adm_fee" value="${store.info.delivery_fee || 0}" />
+    function renderAdminWorkspace() {
+      const ws = document.getElementById("adminWorkspace");
+      ws.style.display = "block";
+      ws.innerHTML = `
+        <div class="admin-tabs">
+          <button class="tab-btn ${activeAdminTab==='orders'?'active':''}" onclick="setAdminTab('orders')">الطلبات والإحصائيات</button>
+          <button class="tab-btn ${activeAdminTab==='items'?'active':''}" onclick="setAdminTab('items')">الأصناف والعروض</button>
+          <button class="tab-btn ${activeAdminTab==='settings'?'active':''}" onclick="setAdminTab('settings')">الإعدادات والخصومات</button>
+          <button class="tab-btn ${activeAdminTab==='customers'?'active':''}" onclick="setAdminTab('customers')">سجل الزبائن</button>
+        </div>
+        <div id="adminTabBody"></div>
+      `;
+      if (activeAdminTab === "orders") renderOrdersTab();
+      else if (activeAdminTab === "items") renderItemsTab();
+      else if (activeAdminTab === "settings") renderSettingsTab();
+      else if (activeAdminTab === "customers") renderCustomersTab();
+    }
 
-        <h4 class="sec-title">إضافة عرض جديد</h4>
-        <input type="text" id="new_offer_title" placeholder="عنوان العرض (مثال: عرض الجمعة على المعجنات)" />
-        <input type="text" id="new_offer_desc" placeholder="تفاصيل العرض" />
-        <input type="number" id="new_offer_price" placeholder="سعر العرض (اختياري)" />
-        <button class="btn btn-dark" onclick="addNewOffer()">+ إضافة العرض</button>
+    function renderOrdersTab() {
+      const orders = store.orders || [];
+      const pending = orders.filter(o => o.status === "pending");
+      const completed = orders.filter(o => o.status === "completed");
+      const rejected = orders.filter(o => o.status === "rejected");
+      const totalSales = completed.reduce((acc, o) => acc + Number(o.total || 0), 0);
+      const curr = store.info.currency || "";
 
-        <div style="margin-top:10px;">
-          ${(store.offers || []).map((o, idx) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
-              <span>🔥 <strong>${o.title}</strong> ${o.price ? `- ${Number(o.price).toLocaleString()}` : ""}</span>
-              <button class="btn btn-danger" onclick="deleteOffer(${idx})">حذف</button>
-            </div>
-          `).join("")}
+      const list = orders.filter(o => ordersFilter === "all" || o.status === ordersFilter);
+
+      document.getElementById("adminTabBody").innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div>معلقة</div><div class="stat-val">${pending.length}</div></div>
+          <div class="stat-card"><div>منفذة</div><div class="stat-val">${completed.length}</div></div>
+          <div class="stat-card"><div>مرفوضة</div><div class="stat-val">${rejected.length}</div></div>
+          <div class="stat-card"><div>مبيعات المنفذة</div><div class="stat-val">${totalSales.toLocaleString()} ${curr}</div></div>
         </div>
 
-        <h4 class="sec-title">إضافة صنف جديد</h4>
-        <input type="text" id="new_name" placeholder="اسم الصنف الجديد" />
-        <input type="text" id="new_desc" placeholder="وصف مختصر للصنف" />
-        <input type="number" id="new_price" placeholder="السعر" />
-        <input type="text" id="new_img" placeholder="رابط صورة الصنف (اختياري https://...)" />
-        <select id="new_cat">
-          ${cats.map(c => `<option value="${c}">${c}</option>`).join("")}
+        <h4 class="sec-title">تسجيل طلب جديد في السجل</h4>
+        <input type="text" id="new_ord_phone" placeholder="رقم هاتف الزبون" />
+        <input type="text" id="new_ord_name" placeholder="اسم الزبون" />
+        <input type="text" id="new_ord_summary" placeholder="ملخص الأصناف (مثال: 2 منقوشة زعتر)" />
+        <input type="number" id="new_ord_total" placeholder="المبلغ الإجمالي" />
+        <select id="new_ord_pay">
+          <option value="manual">يدوي / نقدي</option>
+          <option value="shamcash">شام كاش</option>
         </select>
-        <button class="btn btn-dark" onclick="addNewItem()">+ إضافة الصنف للقائمة</button>
+        <input type="text" id="new_ord_ref" placeholder="رقم عملية شام كاش (إن وجد)" />
+        <button class="btn btn-dark" onclick="addOrderRecord()">+ إضافة الطلب كـ (معلق)</button>
+
+        <h4 class="sec-title">سجل الطلبات</h4>
+        <div class="cats">
+          <button class="cat-btn ${ordersFilter==='all'?'active':''}" onclick="ordersFilter='all';renderOrdersTab()">الكل (${orders.length})</button>
+          <button class="cat-btn ${ordersFilter==='pending'?'active':''}" onclick="ordersFilter='pending';renderOrdersTab()">معلقة (${pending.length})</button>
+          <button class="cat-btn ${ordersFilter==='completed'?'active':''}" onclick="ordersFilter='completed';renderOrdersTab()">منفذة (${completed.length})</button>
+          <button class="cat-btn ${ordersFilter==='rejected'?'active':''}" onclick="ordersFilter='rejected';renderOrdersTab()">مرفوضة (${rejected.length})</button>
+        </div>
+
+        ${list.length === 0 ? `<p style="color:var(--muted)">لا توجد طلبات في هذا القسم.</p>` : list.map(o => {
+          const stBadge = o.status === "completed"
+            ? `<span class="st-completed">منفذ</span>`
+            : o.status === "rejected"
+            ? `<span class="st-rejected">مرفوض</span>`
+            : `<span class="st-pending">معلق</span>`;
+          return `
+            <div class="order-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>#${o.id} - ${o.customer_name || ""} (${o.customer_phone || ""})</strong>
+                ${stBadge}
+              </div>
+              <div style="font-size:0.86rem;margin-top:6px;">${o.summary || ""}</div>
+              <div style="font-size:0.84rem;color:var(--muted);margin-top:4px;">
+                المبلغ: <strong>${Number(o.total || 0).toLocaleString()} ${curr}</strong> | الدفع: ${o.pay_method === "shamcash" ? "شام كاش (" + (o.sham_ref || "-") + ")" : "يدوي"}
+              </div>
+              ${o.delivery_eta ? `<div style="font-size:0.84rem;color:#166534;margin-top:4px;">موعد التسليم: ${o.delivery_eta}</div>` : ""}
+              ${o.reject_reason ? `<div style="font-size:0.84rem;color:#b91c1c;margin-top:4px;">سبب الرفض: ${o.reject_reason}</div>` : ""}
+
+              ${o.status === "pending" ? `
+                <div style="margin-top:8px;">
+                  <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة أو 7:00 مساءً)" value="${o.delivery_eta || ""}" />
+                  <input type="text" id="rej_${o.id}" placeholder="سبب الرفض (في حال رفض الطلب)" value="${o.reject_reason || ""}" />
+                  <div class="row-actions">
+                    <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ موافقة + فاتورة واتساب</button>
+                    <button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ رفض + اعتذار واتساب</button>
+                  </div>
+                </div>
+              ` : ""}
+            </div>
+          `;
+        }).join("")}
+
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveToGist()">حفظ سجل الطلبات في Gist</button>
+      `;
+    }
+
+    function addOrderRecord() {
+      const phone = document.getElementById("new_ord_phone").value.trim();
+      const name = document.getElementById("new_ord_name").value.trim();
+      const summary = document.getElementById("new_ord_summary").value.trim();
+      const total = Number(document.getElementById("new_ord_total").value || 0);
+      const pay_method = document.getElementById("new_ord_pay").value;
+      const sham_ref = document.getElementById("new_ord_ref").value.trim();
+      if (!phone || !summary) { alert("يرجى إدخال رقم الزبون وملخص الطلب."); return; }
+
+      store.orders.unshift({
+        id: "ORD" + String(Date.now()).slice(-5),
+        customer_phone: phone,
+        customer_name: name || "زبون",
+        summary,
+        total,
+        pay_method,
+        sham_ref,
+        status: "pending",
+        created_at: new Date().toISOString().slice(0, 16).replace("T", " ")
+      });
+      upsertCustomer(phone, name, 0, 0);
+      renderOrdersTab();
+    }
+
+    function upsertCustomer(phone, name, addCompletedCount, addSpent) {
+      if (!phone) return;
+      store.customers[phone] = store.customers[phone] || {
+        name: name || "",
+        phone,
+        completed_orders: 0,
+        total_spent: 0,
+        last_order_at: ""
+      };
+      if (name) store.customers[phone].name = name;
+      store.customers[phone].completed_orders = Number(store.customers[phone].completed_orders || 0) + Number(addCompletedCount || 0);
+      store.customers[phone].total_spent = Number(store.customers[phone].total_spent || 0) + Number(addSpent || 0);
+      store.customers[phone].last_order_at = new Date().toISOString().slice(0, 10);
+    }
+
+    function approveOrder(orderId) {
+      const ord = store.orders.find(x => x.id === orderId);
+      if (!ord) return;
+      const eta = document.getElementById(`eta_${orderId}`).value.trim() || "في أقرب وقت";
+      ord.delivery_eta = eta;
+      ord.status = "completed";
+      upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total);
+
+      const curr = store.info.currency || "";
+      const invoiceText = [
+        `🧾 *فاتورة معتمدة من ${store.info.name}*`,
+        `رقم الطلب: #${ord.id}`,
+        `الزبون: ${ord.customer_name || ""}`,
+        `التفاصيل: ${ord.summary}`,
+        `الإجمالي: *${Number(ord.total || 0).toLocaleString()} ${curr}*`,
+        `موعد التسليم المتوقع: *${eta}*`,
+        `شكراً لتعاملكم معنا!`
+      ].join("\n");
+
+      const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
+      if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(invoiceText)}`, "_blank");
+      renderOrdersTab();
+    }
+
+    function rejectOrder(orderId) {
+      const ord = store.orders.find(x => x.id === orderId);
+      if (!ord) return;
+      const reason = document.getElementById(`rej_${orderId}`).value.trim() || "تعذر تنفيذ الطلب حالياً";
+      ord.reject_reason = reason;
+      ord.status = "rejected";
+
+      const apologyText = [
+        `نعتذر منك *${ord.customer_name || "عزيزنا الزبون"}* بخصوص الطلب *#${ord.id}* من *${store.info.name}*.`,
+        `سبب الاعتذار: ${reason}`,
+        `نسعد بخدمتك في أي وقت.`
+      ].join("\n");
+
+      const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
+      if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(apologyText)}`, "_blank");
+      renderOrdersTab();
+    }
+
+    function renderItemsTab() {
+      const cats = store.categories;
+      let html = `
+        <h4 class="sec-title">إضافة عرض جديد</h4>
+        <input type="text" id="new_offer_title" placeholder="عنوان العرض" />
+        <input type="text" id="new_offer_desc" placeholder="تفاصيل العرض" />
+        <input type="number" id="new_offer_price" placeholder="سعر العرض (اختياري)" />
+        <button class="btn btn-dark" onclick="addOffer()">+ إضافة العرض</button>
+        ${store.offers.map((o, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
+            <span>🔥 <strong>${o.title}</strong></span>
+            <button class="btn btn-danger" onclick="store.offers.splice(${i},1);renderItemsTab()">حذف</button>
+          </div>
+        `).join("")}
+
+        <h4 class="sec-title">إضافة صنف جديد</h4>
+        <input type="text" id="new_name" placeholder="اسم الصنف" />
+        <input type="text" id="new_desc" placeholder="الوصف" />
+        <input type="number" id="new_price" placeholder="السعر" />
+        <input type="text" id="new_img" placeholder="رابط الصورة (اختياري)" />
+        <select id="new_cat">${cats.map(c => `<option value="${c}">${c}</option>`).join("")}</select>
+        <button class="btn btn-dark" onclick="addItem()">+ إضافة الصنف</button>
 
         <h4 class="sec-title">الأصناف الحالية</h4>
       `;
-
-      html += (store.items || []).map((it, idx) => `
+      html += store.items.map((it, idx) => `
         <div style="border-bottom:1px solid #e2e8f0;padding:10px 0;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <strong>${it.name}</strong>
-            <button class="btn btn-danger" onclick="deleteItem(${idx})">حذف</button>
+            <button class="btn btn-danger" onclick="store.items.splice(${idx},1);renderItemsTab()">حذف</button>
           </div>
           السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:130px;display:inline-block;" />
           <label style="margin-right:8px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
-          <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط صورة الصنف (اختياري)" />
+          <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط الصورة" />
         </div>
       `).join("");
-
-      html += `<button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="saveToGist()">حفظ كل التعديلات في Gist</button>`;
-      ed.innerHTML = html;
+      html += `<button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="syncItemsAndSave()">حفظ الأصناف والعروض في Gist</button>`;
+      document.getElementById("adminTabBody").innerHTML = html;
     }
 
-    function syncInputsToMemory() {
-      const nameEl = document.getElementById("adm_name");
-      if (!nameEl) return;
-      store.info.name = nameEl.value.trim() || store.info.name;
-      store.info.theme_color = document.getElementById("adm_color").value || store.info.theme_color;
-      store.info.phone_whatsapp = document.getElementById("adm_phone").value.trim();
-      store.info.location_text = document.getElementById("adm_loc").value.trim();
-      store.info.delivery_fee = Number(document.getElementById("adm_fee").value || 0);
-      (store.items || []).forEach((it, idx) => {
-        const pEl = document.getElementById(`price_${idx}`);
-        const aEl = document.getElementById(`avail_${idx}`);
-        const iEl = document.getElementById(`img_${idx}`);
-        if (pEl) it.price = Number(pEl.value);
-        if (aEl) it.available = aEl.checked;
-        if (iEl) it.image = iEl.value.trim();
-      });
-    }
-
-    function addNewOffer() {
-      syncInputsToMemory();
+    function addOffer() {
       const title = document.getElementById("new_offer_title").value.trim();
       const desc = document.getElementById("new_offer_desc").value.trim();
       const price = Number(document.getElementById("new_offer_price").value || 0);
-      if (!title) { alert("يرجى إدخال عنوان العرض."); return; }
-      store.offers = store.offers || [];
+      if (!title) { alert("أدخل عنوان العرض."); return; }
       store.offers.push({ id: "o_" + Date.now(), title, desc, price });
-      renderAdminEditor();
+      renderItemsTab();
     }
 
-    function deleteOffer(idx) {
-      syncInputsToMemory();
-      store.offers.splice(idx, 1);
-      renderAdminEditor();
-    }
-
-    function addNewItem() {
-      syncInputsToMemory();
+    function addItem() {
       const name = document.getElementById("new_name").value.trim();
       const desc = document.getElementById("new_desc").value.trim();
       const price = Number(document.getElementById("new_price").value);
       const image = document.getElementById("new_img").value.trim();
       const category = document.getElementById("new_cat").value;
-      if (!name || !price) {
-        alert("يرجى إدخال اسم الصنف والسعر.");
-        return;
-      }
-      store.items = store.items || [];
-      store.items.push({
-        id: "i_" + Date.now(),
-        category,
-        name,
-        desc,
-        price,
-        image,
-        available: true
-      });
-      renderAdminEditor();
+      if (!name || !price) { alert("أدخل اسم الصنف والسعر."); return; }
+      store.items.push({ id: "i_" + Date.now(), category, name, desc, price, image, available: true });
+      renderItemsTab();
     }
 
-    function deleteItem(idx) {
-      syncInputsToMemory();
-      store.items.splice(idx, 1);
-      renderAdminEditor();
+    function syncItemsAndSave() {
+      store.items.forEach((it, idx) => {
+        const p = document.getElementById(`price_${idx}`);
+        const a = document.getElementById(`avail_${idx}`);
+        const im = document.getElementById(`img_${idx}`);
+        if (p) it.price = Number(p.value);
+        if (a) it.available = a.checked;
+        if (im) it.image = im.value.trim();
+      });
+      saveToGist();
+    }
+
+    function renderSettingsTab() {
+      const sc = store.info.shamcash || {};
+      const loy = store.promos.loyalty || {};
+      const coupons = store.promos.coupons || [];
+
+      document.getElementById("adminTabBody").innerHTML = `
+        <h4 class="sec-title">معلومات المحل والتوصيل</h4>
+        <label>اسم المحل:</label>
+        <input type="text" id="set_name" value="${store.info.name || ""}" />
+        <label>لون المحل الأساسي:</label>
+        <input type="color" id="set_color" value="${store.info.theme_color || "#d97706"}" />
+        <label><input type="checkbox" id="set_open" ${store.info.is_open !== false ? "checked" : ""} style="width:auto;" /> المحل مفتوح لاستقبال الطلبات</label><br/>
+        <label>رقم الواتساب:</label>
+        <input type="text" id="set_phone" value="${store.info.phone_whatsapp || ""}" />
+        <label>موقع المحل / العنوان:</label>
+        <input type="text" id="set_loc" value="${store.info.location_text || ""}" />
+        <label>نوع التوصيل:</label>
+        <select id="set_del_type">
+          <option value="fixed" ${store.info.delivery_type !== "free" ? "selected" : ""}>بسعر مخصص</option>
+          <option value="free" ${store.info.delivery_type === "free" ? "selected" : ""}>مجاني</option>
+        </select>
+        <label>سعر التوصيل (إذا كان بسعر مخصص):</label>
+        <input type="number" id="set_fee" value="${store.info.delivery_fee || 0}" />
+
+        <h4 class="sec-title">إعدادات شام كاش</h4>
+        <label>حساب / معرّف شام كاش:</label>
+        <input type="text" id="set_sc_code" value="${sc.account_code || ""}" />
+        <label>اسم المستفيد في شام كاش:</label>
+        <input type="text" id="set_sc_name" value="${sc.account_name || ""}" />
+
+        <h4 class="sec-title">خصم الطلبات المتكررة (الولاء)</h4>
+        <label><input type="checkbox" id="set_loy_en" ${loy.enabled ? "checked" : ""} style="width:auto;" /> تفعيل خصم الطلبات المتكررة</label>
+        <label>كل كم طلب منفذ يستحق الخصم؟ (مثال: 3):</label>
+        <input type="number" id="set_loy_n" value="${loy.every_n_orders || 3}" />
+        <label>نسبة الخصم (%):</label>
+        <input type="number" id="set_loy_pct" value="${loy.discount_percent || 10}" />
+
+        <h4 class="sec-title">كوبونات الخصم</h4>
+        <input type="text" id="new_cp_code" placeholder="كود الكوبون (مثال: VIP15)" />
+        <select id="new_cp_type">
+          <option value="percent">نسبة مئوية (%)</option>
+          <option value="fixed">مبلغ ثابت</option>
+        </select>
+        <input type="number" id="new_cp_val" placeholder="قيمة الخصم" />
+        <button class="btn btn-dark" onclick="addCoupon()">+ إضافة كوبون</button>
+        ${coupons.map((c, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
+            <span>🎟️ <strong>${c.code}</strong> (${c.type === "percent" ? c.value + "%" : Number(c.value).toLocaleString()})</span>
+            <button class="btn btn-danger" onclick="store.promos.coupons.splice(${i},1);renderSettingsTab()">حذف</button>
+          </div>
+        `).join("")}
+
+        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncSettingsAndSave()">حفظ الإعدادات في Gist</button>
+      `;
+    }
+
+    function addCoupon() {
+      const code = document.getElementById("new_cp_code").value.trim().toUpperCase();
+      const type = document.getElementById("new_cp_type").value;
+      const value = Number(document.getElementById("new_cp_val").value || 0);
+      if (!code || !value) { alert("أدخل الكود وقيمة الخصم."); return; }
+      store.promos.coupons.push({ code, type, value, active: true });
+      renderSettingsTab();
+    }
+
+    function syncSettingsAndSave() {
+      store.info.name = document.getElementById("set_name").value.trim() || store.info.name;
+      store.info.theme_color = document.getElementById("set_color").value;
+      store.info.is_open = document.getElementById("set_open").checked;
+      store.info.phone_whatsapp = document.getElementById("set_phone").value.trim();
+      store.info.location_text = document.getElementById("set_loc").value.trim();
+      store.info.delivery_type = document.getElementById("set_del_type").value;
+      store.info.delivery_fee = Number(document.getElementById("set_fee").value || 0);
+      store.info.shamcash = {
+        account_code: document.getElementById("set_sc_code").value.trim(),
+        account_name: document.getElementById("set_sc_name").value.trim(),
+        notes: (store.info.shamcash && store.info.shamcash.notes) || ""
+      };
+      store.promos.loyalty = {
+        enabled: document.getElementById("set_loy_en").checked,
+        every_n_orders: Number(document.getElementById("set_loy_n").value || 3),
+        discount_percent: Number(document.getElementById("set_loy_pct").value || 10)
+      };
+      saveToGist();
+    }
+
+    function renderCustomersTab() {
+      const custList = Object.values(store.customers || {});
+      const curr = store.info.currency || "";
+      document.getElementById("adminTabBody").innerHTML = `
+        <h4 class="sec-title">سجل الزبائن (${custList.length})</h4>
+        ${custList.length === 0 ? `<p style="color:var(--muted)">لا يوجد زبائن مسجلون بعد.</p>` : custList.map(c => `
+          <div class="order-card">
+            <strong>${c.name || "زبون"}</strong> — <span>${c.phone}</span><br/>
+            <small style="color:var(--muted)">
+              طلبات منفذة: <strong>${c.completed_orders || 0}</strong> |
+              إجمالي المشتريات: <strong>${Number(c.total_spent || 0).toLocaleString()} ${curr}</strong> |
+              آخر طلب: ${c.last_order_at || "-"}
+            </small>
+          </div>
+        `).join("")}
+      `;
     }
 
     async function saveToGist() {
-      syncInputsToMemory();
       const tok = document.getElementById("ghTokenInput").value.trim() || localStorage.getItem("gh_gist_token");
       if (!tok) { alert("يرجى إدخال رمز GitHub Token"); return; }
       const res = await fetch(API_URL, {
@@ -415,10 +890,10 @@
         body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
       });
       if (res.ok) {
-        alert("تم حفظ التعديلات بنجاح!");
+        alert("تم حفظ التعديلات بنجاح في قاعدة البيانات!");
         location.reload();
       } else {
-        alert("فشل التحديث. تأكد من صلاحية gist في التوكن.");
+        alert("فشل التحديث. تأكد من صحة التوكن وصلاحية gist.");
       }
     }
 
