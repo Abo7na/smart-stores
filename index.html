@@ -78,7 +78,6 @@
       <div class="cats" id="catsBar"></div>
       <div id="itemsList"></div>
 
-      <!-- بيانات الزبون، الدفع، الكوبون، والموعد -->
       <div id="checkoutBox" class="checkout-box" style="display:none;">
         <h3 style="margin-top:0;">بيانات الطلب والدفع</h3>
         <label>رقم الهاتف (يُحفظ تلقائياً ويفعّل خصم الطلبات المتكررة):</label>
@@ -126,15 +125,16 @@
       </div>
     </div>
 
-    <!-- لوحة إدارة المحل -->
     <div id="adminPanel" class="panel" style="display:none;">
       <h3 style="margin-top:0;">لوحة إدارة المحل</h3>
       <div id="adminLogin">
         <label>رمز PIN الخاص بالمحل:</label>
         <input type="password" id="pinInput" placeholder="أدخل رمز PIN" />
-        <label>رمز GitHub Token (يُحفظ في جهازك فقط للتحديث):</label>
-        <input type="password" id="ghTokenInput" placeholder="ghp_..." />
-        <button class="btn btn-dark" onclick="unlockAdmin()">دخول</button>
+        <button class="btn btn-dark" onclick="unlockAdmin()">دخول برمز PIN</button>
+        <hr style="margin:14px 0;border:none;border-top:1px solid #e2e8f0;" />
+        <label>دخول مدير المنصة فقط (حفظ مباشر في Gist عبر Token):</label>
+        <input type="password" id="ghTokenInput" placeholder="ghp_... (خاص بالمشرف فقط)" />
+        <button class="btn btn-primary" onclick="unlockMasterWithToken()">دخول كمشرف منصة</button>
       </div>
       <div id="adminWorkspace" style="display:none;"></div>
     </div>
@@ -151,6 +151,7 @@
   <script>
     const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
     const API_URL = `https://api.github.com/gists/${GIST_ID}`;
+    const PLATFORM_WHATSAPP = "963900000000";
     const params = new URLSearchParams(location.search);
     const storeId = params.get("store") || "bakery1";
 
@@ -170,6 +171,7 @@
     let loyaltyDiscountPct = 0;
     let activeAdminTab = "orders";
     let ordersFilter = "all";
+    let isMasterMode = false;
 
     async function init() {
       try {
@@ -186,6 +188,7 @@
           return;
         }
         ensureStoreStructure();
+        applyLocalDraftIfExists();
         applyTheme();
         renderMeta();
         renderOffers();
@@ -214,6 +217,22 @@
       store.promos.coupons = store.promos.coupons || [];
     }
 
+    function applyLocalDraftIfExists() {
+      const draft = localStorage.getItem("draft_store_" + storeId);
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft);
+          dbData.stores[storeId] = parsed;
+          store = parsed;
+          ensureStoreStructure();
+        } catch (_) {}
+      }
+    }
+
+    function saveDraftLocal() {
+      localStorage.setItem("draft_store_" + storeId, JSON.stringify(store));
+    }
+
     function applyTheme() {
       const t = store.info.type || "bakery";
       document.title = store.info.name;
@@ -234,7 +253,7 @@
 
       const sc = store.info.shamcash || {};
       document.getElementById("shamCashInfo").textContent =
-        `حساب شام كاش: ${sc.account_code || "غير محدد"} | الاسم: ${sc.account_name || ""} ${sc.notes ? "(" + sc.notes + ")" : ""}`;
+        `حساب شام كاش: ${sc.account_code || "غير محدد"} | الاسم: ${sc.account_name || ""}`;
     }
 
     function renderMeta() {
@@ -296,7 +315,7 @@
       if (isSuspended) return;
       const cb = document.getElementById("closedBanner");
       if (store.info.is_open === false) {
-        cb.innerHTML = `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً. يمكنك تصفح القائمة.</div>`;
+        cb.innerHTML = `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً.</div>`;
       } else {
         cb.innerHTML = "";
       }
@@ -333,7 +352,7 @@
         msgEl.textContent = `🎉 زبون مميز! هذا طلبك رقم (${nextOrderNum}) ويستحق خصم ولاء ${loyaltyDiscountPct}% تلقائياً.`;
       } else {
         const rem = Number(loy.every_n_orders) - (nextOrderNum % Number(loy.every_n_orders));
-        msgEl.textContent = `عدد طلباتك المنفذة: ${completedCount} (يتبقى ${rem} طلب للحصول على خصم ${loy.discount_percent}%).`;
+        msgEl.textContent = `طلباتك المنفذة: ${completedCount} (يتبقى ${rem} طلب لخصم ${loy.discount_percent}%).`;
       }
       updateTotals();
     }
@@ -504,7 +523,7 @@
 
       const wp = (store.info.phone_whatsapp || "").replace(/\D/g, "");
       if (wp) window.open(`https://wa.me/${wp}?text=${encodeURIComponent(msg)}`, "_blank");
-      else alert("تم تجهيز الطلب. يرجى التواصل مع إدارة المحل لتأكيده.");
+      else alert("تم تجهيز الطلب.");
     }
 
     function toggleAdmin() {
@@ -516,12 +535,20 @@
 
     function unlockAdmin() {
       const pin = document.getElementById("pinInput").value.trim();
-      const tok = document.getElementById("ghTokenInput").value.trim();
       if (pin !== String((store.subscription && store.subscription.admin_pin) || "")) {
         alert("رمز PIN غير صحيح");
         return;
       }
-      if (tok) localStorage.setItem("gh_gist_token", tok);
+      isMasterMode = false;
+      document.getElementById("adminLogin").style.display = "none";
+      renderAdminWorkspace();
+    }
+
+    function unlockMasterWithToken() {
+      const tok = document.getElementById("ghTokenInput").value.trim();
+      if (!tok) { alert("أدخل رمز GitHub Token الخاص بالمشرف."); return; }
+      localStorage.setItem("gh_gist_token", tok);
+      isMasterMode = true;
       document.getElementById("adminLogin").style.display = "none";
       renderAdminWorkspace();
     }
@@ -549,6 +576,31 @@
       else if (activeAdminTab === "customers") renderCustomersTab();
     }
 
+    function renderSaveActionButtons() {
+      saveDraftLocal();
+      if (isMasterMode) {
+        return `<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveToGistDirect()">حفظ ونشر مباشرة في Gist (وضع المشرف)</button>`;
+      }
+      return `
+        <div class="alert alert-warn" style="margin-top:14px;">
+          تم حفظ التعديلات كمسودة على هذا الجهاز. لإرسالها للمشرف لاعتمادها ونشرها دون كشف أي أسرار:
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="sendChangesToPlatformOwner()">إرسال ملخص التعديلات للمشرف عبر واتساب</button>
+      `;
+    }
+
+    function sendChangesToPlatformOwner() {
+      saveDraftLocal();
+      const summary = [
+        `تحديث بيانات المتجر: *${store.info.name}* (${storeId})`,
+        `الحالة: ${store.info.is_open === false ? "مغلق" : "مفتوح"}`,
+        `الهاتف: ${store.info.phone_whatsapp || "-"} | الموقع: ${store.info.location_text || "-"}`,
+        `التوصيل: ${store.info.delivery_type === "free" ? "مجاني" : (store.info.delivery_fee || 0)}`,
+        `عدد الأصناف: ${store.items.length} | عدد العروض: ${store.offers.length} | عدد الطلبات: ${store.orders.length}`
+      ].join("\n");
+      window.open(`https://wa.me/${PLATFORM_WHATSAPP}?text=${encodeURIComponent(summary)}`, "_blank");
+    }
+
     function renderOrdersTab() {
       const orders = store.orders || [];
       const pending = orders.filter(o => o.status === "pending");
@@ -556,7 +608,6 @@
       const rejected = orders.filter(o => o.status === "rejected");
       const totalSales = completed.reduce((acc, o) => acc + Number(o.total || 0), 0);
       const curr = store.info.currency || "";
-
       const list = orders.filter(o => ordersFilter === "all" || o.status === ordersFilter);
 
       document.getElementById("adminTabBody").innerHTML = `
@@ -570,7 +621,7 @@
         <h4 class="sec-title">تسجيل طلب جديد في السجل</h4>
         <input type="text" id="new_ord_phone" placeholder="رقم هاتف الزبون" />
         <input type="text" id="new_ord_name" placeholder="اسم الزبون" />
-        <input type="text" id="new_ord_summary" placeholder="ملخص الأصناف (مثال: 2 منقوشة زعتر)" />
+        <input type="text" id="new_ord_summary" placeholder="ملخص الأصناف" />
         <input type="number" id="new_ord_total" placeholder="المبلغ الإجمالي" />
         <select id="new_ord_pay">
           <option value="manual">يدوي / نقدي</option>
@@ -605,10 +656,9 @@
               </div>
               ${o.delivery_eta ? `<div style="font-size:0.84rem;color:#166534;margin-top:4px;">موعد التسليم: ${o.delivery_eta}</div>` : ""}
               ${o.reject_reason ? `<div style="font-size:0.84rem;color:#b91c1c;margin-top:4px;">سبب الرفض: ${o.reject_reason}</div>` : ""}
-
               ${o.status === "pending" ? `
                 <div style="margin-top:8px;">
-                  <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة أو 7:00 مساءً)" value="${o.delivery_eta || ""}" />
+                  <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة)" value="${o.delivery_eta || ""}" />
                   <input type="text" id="rej_${o.id}" placeholder="سبب الرفض (في حال رفض الطلب)" value="${o.reject_reason || ""}" />
                   <div class="row-actions">
                     <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ موافقة + فاتورة واتساب</button>
@@ -619,8 +669,7 @@
             </div>
           `;
         }).join("")}
-
-        <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveToGist()">حفظ سجل الطلبات في Gist</button>
+        ${renderSaveActionButtons()}
       `;
     }
 
@@ -641,10 +690,10 @@
         total,
         pay_method,
         sham_ref,
-        status: "pending",
-        created_at: new Date().toISOString().slice(0, 16).replace("T", " ")
+        status: "pending"
       });
       upsertCustomer(phone, name, 0, 0);
+      saveDraftLocal();
       renderOrdersTab();
     }
 
@@ -670,6 +719,7 @@
       ord.delivery_eta = eta;
       ord.status = "completed";
       upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total);
+      saveDraftLocal();
 
       const curr = store.info.currency || "";
       const invoiceText = [
@@ -678,10 +728,8 @@
         `الزبون: ${ord.customer_name || ""}`,
         `التفاصيل: ${ord.summary}`,
         `الإجمالي: *${Number(ord.total || 0).toLocaleString()} ${curr}*`,
-        `موعد التسليم المتوقع: *${eta}*`,
-        `شكراً لتعاملكم معنا!`
+        `موعد التسليم المتوقع: *${eta}*`
       ].join("\n");
-
       const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
       if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(invoiceText)}`, "_blank");
       renderOrdersTab();
@@ -693,13 +741,12 @@
       const reason = document.getElementById(`rej_${orderId}`).value.trim() || "تعذر تنفيذ الطلب حالياً";
       ord.reject_reason = reason;
       ord.status = "rejected";
+      saveDraftLocal();
 
       const apologyText = [
         `نعتذر منك *${ord.customer_name || "عزيزنا الزبون"}* بخصوص الطلب *#${ord.id}* من *${store.info.name}*.`,
-        `سبب الاعتذار: ${reason}`,
-        `نسعد بخدمتك في أي وقت.`
+        `سبب الاعتذار: ${reason}`
       ].join("\n");
-
       const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
       if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(apologyText)}`, "_blank");
       renderOrdersTab();
@@ -716,7 +763,7 @@
         ${store.offers.map((o, i) => `
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
             <span>🔥 <strong>${o.title}</strong></span>
-            <button class="btn btn-danger" onclick="store.offers.splice(${i},1);renderItemsTab()">حذف</button>
+            <button class="btn btn-danger" onclick="store.offers.splice(${i},1);saveDraftLocal();renderItemsTab()">حذف</button>
           </div>
         `).join("")}
 
@@ -734,14 +781,14 @@
         <div style="border-bottom:1px solid #e2e8f0;padding:10px 0;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <strong>${it.name}</strong>
-            <button class="btn btn-danger" onclick="store.items.splice(${idx},1);renderItemsTab()">حذف</button>
+            <button class="btn btn-danger" onclick="store.items.splice(${idx},1);saveDraftLocal();renderItemsTab()">حذف</button>
           </div>
           السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:130px;display:inline-block;" />
           <label style="margin-right:8px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
           <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط الصورة" />
         </div>
       `).join("");
-      html += `<button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="syncItemsAndSave()">حفظ الأصناف والعروض في Gist</button>`;
+      html += renderSaveActionButtons();
       document.getElementById("adminTabBody").innerHTML = html;
     }
 
@@ -751,6 +798,7 @@
       const price = Number(document.getElementById("new_offer_price").value || 0);
       if (!title) { alert("أدخل عنوان العرض."); return; }
       store.offers.push({ id: "o_" + Date.now(), title, desc, price });
+      saveDraftLocal();
       renderItemsTab();
     }
 
@@ -762,19 +810,8 @@
       const category = document.getElementById("new_cat").value;
       if (!name || !price) { alert("أدخل اسم الصنف والسعر."); return; }
       store.items.push({ id: "i_" + Date.now(), category, name, desc, price, image, available: true });
+      saveDraftLocal();
       renderItemsTab();
-    }
-
-    function syncItemsAndSave() {
-      store.items.forEach((it, idx) => {
-        const p = document.getElementById(`price_${idx}`);
-        const a = document.getElementById(`avail_${idx}`);
-        const im = document.getElementById(`img_${idx}`);
-        if (p) it.price = Number(p.value);
-        if (a) it.available = a.checked;
-        if (im) it.image = im.value.trim();
-      });
-      saveToGist();
     }
 
     function renderSettingsTab() {
@@ -798,7 +835,7 @@
           <option value="fixed" ${store.info.delivery_type !== "free" ? "selected" : ""}>بسعر مخصص</option>
           <option value="free" ${store.info.delivery_type === "free" ? "selected" : ""}>مجاني</option>
         </select>
-        <label>سعر التوصيل (إذا كان بسعر مخصص):</label>
+        <label>سعر التوصيل:</label>
         <input type="number" id="set_fee" value="${store.info.delivery_fee || 0}" />
 
         <h4 class="sec-title">إعدادات شام كاش</h4>
@@ -809,7 +846,7 @@
 
         <h4 class="sec-title">خصم الطلبات المتكررة (الولاء)</h4>
         <label><input type="checkbox" id="set_loy_en" ${loy.enabled ? "checked" : ""} style="width:auto;" /> تفعيل خصم الطلبات المتكررة</label>
-        <label>كل كم طلب منفذ يستحق الخصم؟ (مثال: 3):</label>
+        <label>كل كم طلب منفذ يستحق الخصم؟</label>
         <input type="number" id="set_loy_n" value="${loy.every_n_orders || 3}" />
         <label>نسبة الخصم (%):</label>
         <input type="number" id="set_loy_pct" value="${loy.discount_percent || 10}" />
@@ -824,12 +861,12 @@
         <button class="btn btn-dark" onclick="addCoupon()">+ إضافة كوبون</button>
         ${coupons.map((c, i) => `
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
-            <span>🎟️ <strong>${c.code}</strong> (${c.type === "percent" ? c.value + "%" : Number(c.value).toLocaleString()})</span>
-            <button class="btn btn-danger" onclick="store.promos.coupons.splice(${i},1);renderSettingsTab()">حذف</button>
+            <span>🎟️ <strong>${c.code}</strong></span>
+            <button class="btn btn-danger" onclick="store.promos.coupons.splice(${i},1);saveDraftLocal();renderSettingsTab()">حذف</button>
           </div>
         `).join("")}
 
-        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncSettingsAndSave()">حفظ الإعدادات في Gist</button>
+        ${renderSaveActionButtons()}
       `;
     }
 
@@ -839,28 +876,8 @@
       const value = Number(document.getElementById("new_cp_val").value || 0);
       if (!code || !value) { alert("أدخل الكود وقيمة الخصم."); return; }
       store.promos.coupons.push({ code, type, value, active: true });
+      saveDraftLocal();
       renderSettingsTab();
-    }
-
-    function syncSettingsAndSave() {
-      store.info.name = document.getElementById("set_name").value.trim() || store.info.name;
-      store.info.theme_color = document.getElementById("set_color").value;
-      store.info.is_open = document.getElementById("set_open").checked;
-      store.info.phone_whatsapp = document.getElementById("set_phone").value.trim();
-      store.info.location_text = document.getElementById("set_loc").value.trim();
-      store.info.delivery_type = document.getElementById("set_del_type").value;
-      store.info.delivery_fee = Number(document.getElementById("set_fee").value || 0);
-      store.info.shamcash = {
-        account_code: document.getElementById("set_sc_code").value.trim(),
-        account_name: document.getElementById("set_sc_name").value.trim(),
-        notes: (store.info.shamcash && store.info.shamcash.notes) || ""
-      };
-      store.promos.loyalty = {
-        enabled: document.getElementById("set_loy_en").checked,
-        every_n_orders: Number(document.getElementById("set_loy_n").value || 3),
-        discount_percent: Number(document.getElementById("set_loy_pct").value || 10)
-      };
-      saveToGist();
     }
 
     function renderCustomersTab() {
@@ -878,19 +895,21 @@
             </small>
           </div>
         `).join("")}
+        ${renderSaveActionButtons()}
       `;
     }
 
-    async function saveToGist() {
+    async function saveToGistDirect() {
       const tok = document.getElementById("ghTokenInput").value.trim() || localStorage.getItem("gh_gist_token");
-      if (!tok) { alert("يرجى إدخال رمز GitHub Token"); return; }
+      if (!tok) { alert("يرجى إدخال رمز GitHub Token الخاص بالمشرف."); return; }
       const res = await fetch(API_URL, {
         method: "PATCH",
         headers: { "Authorization": `Bearer ${tok}`, "Content-Type": "application/json" },
         body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
       });
       if (res.ok) {
-        alert("تم حفظ التعديلات بنجاح في قاعدة البيانات!");
+        localStorage.removeItem("draft_store_" + storeId);
+        alert("تم حفظ ونشر التعديلات بنجاح في Gist!");
         location.reload();
       } else {
         alert("فشل التحديث. تأكد من صحة التوكن وصلاحية gist.");
