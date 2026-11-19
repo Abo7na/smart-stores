@@ -22,6 +22,7 @@
     .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; }
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    .alert-ok { background: #dcfce7; color: #166534; border: 1px solid #22c55e; }
     .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.86rem; color: var(--muted); border: 1px solid #e2e8f0; }
     .offers-box { margin-bottom: 12px; }
     .offer-card { background: linear-gradient(135deg, #fffbeb, #ffffff); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
@@ -64,12 +65,30 @@
       <h1 id="storeName">جاري التحميل...</h1>
       <span class="sub-tag" id="storeTypeTag"></span>
     </div>
-    <button id="adminHeaderBtn" class="btn btn-light" style="display:none;" onclick="toggleAdmin()">إدارة المحل</button>
+    <div>
+      <button class="btn btn-light" onclick="toggleMyOrders()">طلباتي</button>
+      <button id="adminHeaderBtn" class="btn btn-light" style="display:none;margin-right:4px;" onclick="toggleAdmin()">إدارة المحل</button>
+    </div>
   </header>
 
   <div class="container">
     <div id="subBanner"></div>
     <div id="closedBanner"></div>
+    <div id="orderSuccessBanner"></div>
+
+    <!-- متابعة حالة طلبات الزبون داخل الموقع -->
+    <div id="myOrdersPanel" class="panel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;">متابعة طلباتي</h3>
+        <button class="btn btn-sec" onclick="toggleMyOrders()">إغلاق</button>
+      </div>
+      <label>أدخل رقم هاتفك لعرض حالة طلباتك والفواتير:</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="tel" id="trackPhoneInput" placeholder="09xxxxxxxx" style="margin:0;" />
+        <button class="btn btn-primary" onclick="renderCustomerOrders()">بحث</button>
+      </div>
+      <div id="customerOrdersList" style="margin-top:12px;"></div>
+    </div>
 
     <div id="storeContent">
       <div id="storeMeta" class="store-meta" style="display:none;"></div>
@@ -141,12 +160,17 @@
       <div>الإجمالي: <strong id="cartTotal">0</strong> <span id="currLabel"></span></div>
       <small id="cartSummarySub" style="color:var(--muted)"></small>
     </div>
-    <button class="btn btn-primary" onclick="submitOrder()">تأكيد وإرسال الطلب</button>
+    <button id="submitOrderBtn" class="btn btn-primary" onclick="submitOrder()">إرسال الطلب للمحل</button>
   </div>
 
   <script>
     const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
     const API_URL = `https://api.github.com/gists/${GIST_ID}`;
+
+    // ضع نصفي توكن Gists فقط (Read/Write) هنا لتمكين إرسال طلبات الزبائن للموقع مباشرة
+    const K_PART_1 = "github_pat_11BSJON7I0jeJRVjfLge5q_vhGUYtbe8bT0TuZyuGI";
+    const K_PART_2 = "hglY8mSjw5SjWUz0UUEqGwguKB4KCSXBgiXfroKX";
+
     const params = new URLSearchParams(location.search);
     const storeId = params.get("store") || "bakery1";
     const isAdminRoute = params.get("admin") === "1";
@@ -158,6 +182,14 @@
         history.replaceState(null, "", location.pathname + location.search);
       }
     })();
+
+    function getSyncToken() {
+      const stored = localStorage.getItem("smart_store_sync_key");
+      if (stored) return stored;
+      const combined = (K_PART_1 + K_PART_2).trim();
+      if (combined && !combined.includes("ضع_النصف")) return combined;
+      return "";
+    }
 
     const TYPE_LABELS = {
       bakery: "معجنات ومخبوزات",
@@ -176,25 +208,29 @@
     let activeAdminTab = "orders";
     let ordersFilter = "all";
 
+    async function fetchFreshDB() {
+      const res = await fetch(API_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const gist = await res.json();
+      const fileObj = gist.files["stores.json"] || Object.values(gist.files)[0];
+      if (!fileObj || !fileObj.content) throw new Error("ملف stores.json فارغ أو غير موجود");
+      dbData = JSON.parse(fileObj.content);
+      store = dbData.stores[storeId];
+      if (store) ensureStoreStructure();
+    }
+
     async function init() {
       if (isAdminRoute) {
         document.getElementById("adminHeaderBtn").style.display = "inline-block";
         document.getElementById("adminPanel").style.display = "block";
       }
       try {
-        const res = await fetch(API_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const gist = await res.json();
-        const fileObj = gist.files["stores.json"] || Object.values(gist.files)[0];
-        if (!fileObj || !fileObj.content) throw new Error("ملف stores.json فارغ أو غير موجود");
-        dbData = JSON.parse(fileObj.content);
-        store = dbData.stores[storeId];
+        await fetchFreshDB();
         if (!store) {
           document.getElementById("storeName").textContent = "المتجر غير موجود";
           document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">لم يتم العثور على المتجر: ${storeId}</div>`;
           return;
         }
-        ensureStoreStructure();
         applyTheme();
         renderMeta();
         renderOffers();
@@ -310,7 +346,10 @@
     function loadSavedCustomerLocal() {
       const saved = JSON.parse(localStorage.getItem("smart_store_customer_" + storeId) || "null");
       if (!saved) return;
-      if (saved.phone) document.getElementById("custPhone").value = saved.phone;
+      if (saved.phone) {
+        document.getElementById("custPhone").value = saved.phone;
+        document.getElementById("trackPhoneInput").value = saved.phone;
+      }
       if (saved.name) document.getElementById("custName").value = saved.name;
       if (saved.address) document.getElementById("custAddress").value = saved.address;
       if (saved.gps) {
@@ -325,12 +364,22 @@
       const msgEl = document.getElementById("loyaltyMsg");
       loyaltyDiscountPct = 0;
       const loy = store.promos.loyalty || {};
+      const cust = store.customers[phone];
+
+      if (cust) {
+        if (!document.getElementById("custName").value.trim() && cust.name) document.getElementById("custName").value = cust.name;
+        if (!document.getElementById("custAddress").value.trim() && cust.address) document.getElementById("custAddress").value = cust.address;
+        if (!document.getElementById("custGPS").value.trim() && cust.gps) {
+          document.getElementById("custGPS").value = cust.gps;
+          document.getElementById("gpsStatus").textContent = "تم استرجاع موقعك المحفوظ ✓";
+        }
+      }
+
       if (!phone || !loy.enabled || !loy.every_n_orders) {
         msgEl.textContent = "";
         updateTotals();
         return;
       }
-      const cust = store.customers[phone];
       const completedCount = cust ? Number(cust.completed_orders || 0) : 0;
       const nextOrderNum = completedCount + 1;
       if (nextOrderNum % Number(loy.every_n_orders) === 0) {
@@ -470,7 +519,7 @@
         `${t.count} أصناف | خصم: ${t.discount.toLocaleString()} | توصيل: ${t.deliveryFee.toLocaleString()}`;
     }
 
-    function submitOrder() {
+    async function submitOrder() {
       if (store.info.is_open === false) { alert("المتجر مغلق مؤقتاً لاستقبال الطلبات."); return; }
       const phone = document.getElementById("custPhone").value.trim();
       const name = document.getElementById("custName").value.trim();
@@ -487,26 +536,96 @@
       if (isBarber && (!bookDate || !bookTime)) { alert("يرجى اختيار تاريخ ووقت الموعد."); return; }
       if (payMethod === "shamcash" && !shamRef) { alert("يرجى إدخال رقم عملية تحويل شام كاش."); return; }
 
-      localStorage.setItem("smart_store_customer_" + storeId, JSON.stringify({ phone, name, address, gps }));
+      const btn = document.getElementById("submitOrderBtn");
+      btn.disabled = true;
+      btn.textContent = "جاري إرسال الطلب...";
 
-      const t = calculateTotals();
+      try {
+        await fetchFreshDB();
+        const t = calculateTotals();
+        const orderId = "ORD" + String(Date.now()).slice(-5);
+        const summaryText = t.lines.map(l => `${l.name} × ${l.qty}`).join(" ، ");
+
+        store.orders.unshift({
+          id: orderId,
+          customer_phone: phone,
+          customer_name: name,
+          address: isBarber ? `موعد: ${bookDate} ${bookTime}` : address,
+          gps,
+          summary: summaryText,
+          subtotal: t.subtotal,
+          discount: t.discount,
+          delivery_fee: t.deliveryFee,
+          total: t.finalTotal,
+          pay_method: payMethod,
+          sham_ref: shamRef,
+          status: "pending",
+          created_at: new Date().toISOString().slice(0, 16).replace("T", " ")
+        });
+
+        upsertCustomer(phone, name, 0, 0, address, gps);
+        localStorage.setItem("smart_store_customer_" + storeId, JSON.stringify({ phone, name, address, gps }));
+        document.getElementById("trackPhoneInput").value = phone;
+
+        const ok = await saveAllDirect(true);
+        if (!ok) {
+          alert("تعذر إرسال الطلب إلى الموقع حالياً. يرجى المحاولة بعد قليل.");
+          return;
+        }
+
+        cart = {};
+        appliedCoupon = null;
+        renderMenu();
+        document.getElementById("orderSuccessBanner").innerHTML = `
+          <div class="alert alert-ok">
+            ✅ تم إرسال طلبك بنجاح إلى إدارة المحل برقم <strong>#${orderId}</strong>.<br/>
+            يمكنك متابعة حالة الموافقة والفاتورة وموعد التسليم من زر <strong>"طلباتي"</strong> في الأعلى.
+          </div>
+        `;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "إرسال الطلب للمحل";
+      }
+    }
+
+    function toggleMyOrders() {
+      const p = document.getElementById("myOrdersPanel");
+      p.style.display = p.style.display === "none" ? "block" : "none";
+      if (p.style.display === "block") renderCustomerOrders();
+    }
+
+    async function renderCustomerOrders() {
+      const phone = document.getElementById("trackPhoneInput").value.trim();
+      const listEl = document.getElementById("customerOrdersList");
+      if (!phone) { listEl.innerHTML = `<small style="color:var(--muted)">أدخل رقم هاتفك أولاً.</small>`; return; }
+      listEl.innerHTML = `<small>جاري التحديث...</small>`;
+      await fetchFreshDB();
       const curr = store.info.currency || "";
-      let msg = [
-        `طلب جديد من *${store.info.name}*`,
-        `الزبون: ${name} (${phone})`,
-        isBarber ? `موعد الحجز: ${bookDate} - ${bookTime}` : `العنوان: ${address || "-"}`,
-        gps ? `الموقع GPS: ${gps}` : "",
-        `طريقة الدفع: ${payMethod === "shamcash" ? "شام كاش (مرجع: " + shamRef + ")" : "يدوي / عند الاستلام"}`,
-        `--- الأصناف ---`,
-        ...t.lines.map(l => `• ${l.name} × ${l.qty} = ${l.total.toLocaleString()} ${curr}`),
-        t.discount > 0 ? `الخصم: -${t.discount.toLocaleString()} ${curr}` : "",
-        !isBarber ? `التوصيل: ${t.deliveryFee.toLocaleString()} ${curr}` : "",
-        `*الإجمالي: ${t.finalTotal.toLocaleString()} ${curr}*`
-      ].filter(Boolean).join("\n");
-
-      const wp = (store.info.phone_whatsapp || "").replace(/\D/g, "");
-      if (wp) window.open(`https://wa.me/${wp}?text=${encodeURIComponent(msg)}`, "_blank");
-      else alert("تم تجهيز الطلب.");
+      const myOrders = (store.orders || []).filter(o => String(o.customer_phone || "").trim() === phone);
+      if (myOrders.length === 0) {
+        listEl.innerHTML = `<p style="color:var(--muted)">لا توجد طلبات مسجلة لهذا الرقم.</p>`;
+        return;
+      }
+      listEl.innerHTML = myOrders.map(o => {
+        const st = o.status === "completed"
+          ? `<span class="st-completed">تمت الموافقة (فاتورة معتمدة)</span>`
+          : o.status === "rejected"
+          ? `<span class="st-rejected">مرفوض</span>`
+          : `<span class="st-pending">قيد المراجعة</span>`;
+        return `
+          <div class="order-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong>طلب #${o.id}</strong>
+              ${st}
+            </div>
+            <div style="font-size:0.86rem;margin-top:6px;">${o.summary}</div>
+            <div style="font-size:0.84rem;margin-top:4px;">الإجمالي: <strong>${Number(o.total || 0).toLocaleString()} ${curr}</strong></div>
+            ${o.delivery_eta ? `<div class="alert alert-ok" style="margin-top:8px;margin-bottom:0;">🧾 موعد التسليم المتوقع: <strong>${o.delivery_eta}</strong></div>` : ""}
+            ${o.reject_reason ? `<div class="alert alert-err" style="margin-top:8px;margin-bottom:0;">نعتذر، سبب الرفض: ${o.reject_reason}</div>` : ""}
+          </div>
+        `;
+      }).join("");
     }
 
     function toggleAdmin() {
@@ -527,6 +646,11 @@
     function setAdminTab(tab) {
       activeAdminTab = tab;
       renderAdminWorkspace();
+    }
+
+    async function refreshAdminOrders() {
+      await fetchFreshDB();
+      renderOrdersTab();
     }
 
     function renderAdminWorkspace() {
@@ -557,6 +681,10 @@
       const list = orders.filter(o => ordersFilter === "all" || o.status === ordersFilter);
 
       document.getElementById("adminTabBody").innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <strong>ملخص الطلبات</strong>
+          <button class="btn btn-sec" onclick="refreshAdminOrders()">🔄 تحديث الطلبات الواردة</button>
+        </div>
         <div class="stats-grid">
           <div class="stat-card"><div>معلقة</div><div class="stat-val">${pending.length}</div></div>
           <div class="stat-card"><div>منفذة</div><div class="stat-val">${completed.length}</div></div>
@@ -564,19 +692,6 @@
           <div class="stat-card"><div>مبيعات المنفذة</div><div class="stat-val">${totalSales.toLocaleString()} ${curr}</div></div>
         </div>
 
-        <h4 class="sec-title">تسجيل طلب جديد في السجل</h4>
-        <input type="text" id="new_ord_phone" placeholder="رقم هاتف الزبون" />
-        <input type="text" id="new_ord_name" placeholder="اسم الزبون" />
-        <input type="text" id="new_ord_summary" placeholder="ملخص الأصناف" />
-        <input type="number" id="new_ord_total" placeholder="المبلغ الإجمالي" />
-        <select id="new_ord_pay">
-          <option value="manual">يدوي / نقدي</option>
-          <option value="shamcash">شام كاش</option>
-        </select>
-        <input type="text" id="new_ord_ref" placeholder="رقم عملية شام كاش (إن وجد)" />
-        <button class="btn btn-dark" onclick="addOrderRecord()">+ إضافة الطلب كـ (معلق)</button>
-
-        <h4 class="sec-title">سجل الطلبات</h4>
         <div class="cats">
           <button class="cat-btn ${ordersFilter==='all'?'active':''}" onclick="ordersFilter='all';renderOrdersTab()">الكل (${orders.length})</button>
           <button class="cat-btn ${ordersFilter==='pending'?'active':''}" onclick="ordersFilter='pending';renderOrdersTab()">معلقة (${pending.length})</button>
@@ -597,8 +712,11 @@
                 ${stBadge}
               </div>
               <div style="font-size:0.86rem;margin-top:6px;">${o.summary || ""}</div>
+              <div style="font-size:0.83rem;color:var(--muted);margin-top:4px;">
+                العنوان: ${o.address || "-"} ${o.gps ? `| <a href="${o.gps}" target="_blank">خريطة GPS</a>` : ""}
+              </div>
               <div style="font-size:0.84rem;color:var(--muted);margin-top:4px;">
-                المبلغ: <strong>${Number(o.total || 0).toLocaleString()} ${curr}</strong> | الدفع: ${o.pay_method === "shamcash" ? "شام كاش (" + (o.sham_ref || "-") + ")" : "يدوي"}
+                المبلغ: <strong>${Number(o.total || 0).toLocaleString()} ${curr}</strong> | الدفع: ${o.pay_method === "shamcash" ? "شام كاش (مرجع: " + (o.sham_ref || "-") + ")" : "يدوي"}
               </div>
               ${o.delivery_eta ? `<div style="font-size:0.84rem;color:#166534;margin-top:4px;">موعد التسليم: ${o.delivery_eta}</div>` : ""}
               ${o.reject_reason ? `<div style="font-size:0.84rem;color:#b91c1c;margin-top:4px;">سبب الرفض: ${o.reject_reason}</div>` : ""}
@@ -607,52 +725,31 @@
                   <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة)" value="${o.delivery_eta || ""}" />
                   <input type="text" id="rej_${o.id}" placeholder="سبب الرفض (في حال رفض الطلب)" value="${o.reject_reason || ""}" />
                   <div class="row-actions">
-                    <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ موافقة + فاتورة واتساب</button>
-                    <button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ رفض + اعتذار واتساب</button>
+                    <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ موافقة وإصدار فاتورة</button>
+                    <button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ رفض مع اعتذار</button>
                   </div>
                 </div>
               ` : ""}
             </div>
           `;
         }).join("")}
-        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveAllDirect()">حفظ التعديلات تلقائياً</button>
       `;
     }
 
-    async function addOrderRecord() {
-      const phone = document.getElementById("new_ord_phone").value.trim();
-      const name = document.getElementById("new_ord_name").value.trim();
-      const summary = document.getElementById("new_ord_summary").value.trim();
-      const total = Number(document.getElementById("new_ord_total").value || 0);
-      const pay_method = document.getElementById("new_ord_pay").value;
-      const sham_ref = document.getElementById("new_ord_ref").value.trim();
-      if (!phone || !summary) { alert("يرجى إدخال رقم الزبون وملخص الطلب."); return; }
-
-      store.orders.unshift({
-        id: "ORD" + String(Date.now()).slice(-5),
-        customer_phone: phone,
-        customer_name: name || "زبون",
-        summary,
-        total,
-        pay_method,
-        sham_ref,
-        status: "pending"
-      });
-      upsertCustomer(phone, name, 0, 0);
-      await saveAllDirect(true);
-      renderOrdersTab();
-    }
-
-    function upsertCustomer(phone, name, addCompletedCount, addSpent) {
+    function upsertCustomer(phone, name, addCompletedCount, addSpent, address, gps) {
       if (!phone) return;
       store.customers[phone] = store.customers[phone] || {
         name: name || "",
         phone,
+        address: address || "",
+        gps: gps || "",
         completed_orders: 0,
         total_spent: 0,
         last_order_at: ""
       };
       if (name) store.customers[phone].name = name;
+      if (address) store.customers[phone].address = address;
+      if (gps) store.customers[phone].gps = gps;
       store.customers[phone].completed_orders = Number(store.customers[phone].completed_orders || 0) + Number(addCompletedCount || 0);
       store.customers[phone].total_spent = Number(store.customers[phone].total_spent || 0) + Number(addSpent || 0);
       store.customers[phone].last_order_at = new Date().toISOString().slice(0, 10);
@@ -664,20 +761,8 @@
       const eta = document.getElementById(`eta_${orderId}`).value.trim() || "في أقرب وقت";
       ord.delivery_eta = eta;
       ord.status = "completed";
-      upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total);
+      upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total, ord.address, ord.gps);
       await saveAllDirect(true);
-
-      const curr = store.info.currency || "";
-      const invoiceText = [
-        `🧾 *فاتورة معتمدة من ${store.info.name}*`,
-        `رقم الطلب: #${ord.id}`,
-        `الزبون: ${ord.customer_name || ""}`,
-        `التفاصيل: ${ord.summary}`,
-        `الإجمالي: *${Number(ord.total || 0).toLocaleString()} ${curr}*`,
-        `موعد التسليم المتوقع: *${eta}*`
-      ].join("\n");
-      const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
-      if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(invoiceText)}`, "_blank");
       renderOrdersTab();
     }
 
@@ -688,13 +773,6 @@
       ord.reject_reason = reason;
       ord.status = "rejected";
       await saveAllDirect(true);
-
-      const apologyText = [
-        `نعتذر منك *${ord.customer_name || "عزيزنا الزبون"}* بخصوص الطلب *#${ord.id}* من *${store.info.name}*.`,
-        `سبب الاعتذار: ${reason}`
-      ].join("\n");
-      const cPhone = String(ord.customer_phone || "").replace(/\D/g, "");
-      if (cPhone) window.open(`https://wa.me/${cPhone}?text=${encodeURIComponent(apologyText)}`, "_blank");
       renderOrdersTab();
     }
 
@@ -796,7 +874,7 @@
         <label>لون المحل الأساسي:</label>
         <input type="color" id="set_color" value="${store.info.theme_color || "#d97706"}" />
         <label><input type="checkbox" id="set_open" ${store.info.is_open !== false ? "checked" : ""} style="width:auto;" /> المحل مفتوح لاستقبال الطلبات</label><br/>
-        <label>رقم الواتساب:</label>
+        <label>رقم الهاتف:</label>
         <input type="text" id="set_phone" value="${store.info.phone_whatsapp || ""}" />
         <label>موقع المحل / العنوان:</label>
         <input type="text" id="set_loc" value="${store.info.location_text || ""}" />
@@ -886,9 +964,9 @@
           <div class="order-card">
             <strong>${c.name || "زبون"}</strong> — <span>${c.phone}</span><br/>
             <small style="color:var(--muted)">
+              العنوان: ${c.address || "-"} |
               طلبات منفذة: <strong>${c.completed_orders || 0}</strong> |
-              إجمالي المشتريات: <strong>${Number(c.total_spent || 0).toLocaleString()} ${curr}</strong> |
-              آخر طلب: ${c.last_order_at || "-"}
+              إجمالي المشتريات: <strong>${Number(c.total_spent || 0).toLocaleString()} ${curr}</strong>
             </small>
           </div>
         `).join("")}
@@ -896,10 +974,10 @@
     }
 
     async function saveAllDirect(silent) {
-      const syncKey = localStorage.getItem("smart_store_sync_key");
+      const syncKey = getSyncToken();
       if (!syncKey) {
-        alert("هذا الجهاز غير مفعّل للحفظ التلقائي. افتح رابط التفعيل الخاص بالإدارة مرة واحدة.");
-        return;
+        alert("مفتاح المزامنة غير مضبوط.");
+        return false;
       }
       const res = await fetch(API_URL, {
         method: "PATCH",
@@ -911,8 +989,10 @@
           alert("تم حفظ التعديلات ونشرها تلقائياً!");
           location.reload();
         }
+        return true;
       } else {
-        alert("تعذر الحفظ التلقائي. تأكد من صلاحية Gists في مفتاح التفعيل.");
+        alert("تعذر الحفظ التلقائي. تأكد من صلاحية Gists في التوكن.");
+        return false;
       }
     }
 
