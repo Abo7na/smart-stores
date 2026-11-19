@@ -7,17 +7,19 @@
   <style>
     :root { --primary: #d97706; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 110px; }
     header { background: var(--primary); color: #fff; padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
     header h1 { margin: 0; font-size: 1.15rem; }
     .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
     .btn-light { background: rgba(255,255,255,.2); color: #fff; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-dark { background: #1e293b; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; padding: 6px 10px; font-size: 0.8rem; }
     .container { max-width: 720px; margin: 16px auto; padding: 0 14px; }
     .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-weight: 600; }
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88rem; color: var(--muted); border: 1px solid #e2e8f0; }
     .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
     .cat-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 999px; padding: 6px 14px; white-space: nowrap; cursor: pointer; }
     .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -29,8 +31,9 @@
     .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
     .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,.08); }
     .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid #e2e8f0; }
-    input { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; }
+    input, select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; }
     .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
+    .sec-title { margin: 14px 0 8px; font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
   </style>
 </head>
 <body>
@@ -42,6 +45,7 @@
   <div class="container">
     <div id="subBanner"></div>
     <div id="storeContent">
+      <div id="storeMeta" class="store-meta" style="display:none;"></div>
       <div class="cats" id="catsBar"></div>
       <div id="itemsList"></div>
     </div>
@@ -94,6 +98,7 @@
           return;
         }
         applyTheme();
+        renderMeta();
         checkSubscription();
         renderMenu();
       } catch (e) {
@@ -107,6 +112,23 @@
       document.getElementById("storeName").textContent = store.info.name;
       document.documentElement.style.setProperty("--primary", store.info.theme_color || "#d97706");
       document.getElementById("currLabel").textContent = store.info.currency || "";
+    }
+
+    function renderMeta() {
+      const metaEl = document.getElementById("storeMeta");
+      const loc = store.info.location_text || "";
+      const phone = store.info.phone_whatsapp || "";
+      const fee = Number(store.info.delivery_fee || 0);
+      let parts = [];
+      if (loc) parts.push(`📍 الموقع: ${loc}`);
+      if (phone) parts.push(`📞 واتساب: ${phone}`);
+      if (fee > 0) parts.push(`🚚 التوصيل: ${fee.toLocaleString()} ${store.info.currency || ""}`);
+      if (parts.length > 0) {
+        metaEl.style.display = "block";
+        metaEl.innerHTML = parts.join(" &nbsp;|&nbsp; ");
+      } else {
+        metaEl.style.display = "none";
+      }
     }
 
     function checkSubscription() {
@@ -199,6 +221,7 @@
       }
       const fee = Number(store.info.delivery_fee || 0);
       lines.push(`التوصيل: ${fee.toLocaleString()} ${store.info.currency}`);
+      if (store.info.location_text) lines.push(`الموقع: ${store.info.location_text}`);
       lines.push(`*الإجمالي: ${(subtotal + fee).toLocaleString()} ${store.info.currency}*`);
       const phone = (store.info.phone_whatsapp || "").replace(/\D/g, "");
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
@@ -221,24 +244,94 @@
       }
       if (tok) localStorage.setItem("gh_gist_token", tok);
       document.getElementById("adminLogin").style.display = "none";
+      renderAdminEditor();
+    }
+
+    function renderAdminEditor() {
       const ed = document.getElementById("adminEditor");
       ed.style.display = "block";
-      ed.innerHTML = (store.items || []).map((it, idx) => `
-        <div style="border-bottom:1px solid #e2e8f0;padding:8px 0;">
-          <strong>${it.name}</strong><br/>
+      const cats = store.categories || ["عام"];
+
+      let html = `
+        <h4 class="sec-title">معلومات التواصل والموقع</h4>
+        <label>رقم الواتساب (مع رمز الدولة، مثال: 9639xxxxxxxx):</label>
+        <input type="text" id="adm_phone" value="${store.info.phone_whatsapp || ""}" />
+        <label>موقع المحل / العنوان:</label>
+        <input type="text" id="adm_loc" value="${store.info.location_text || ""}" placeholder="مثال: دمشق - المزة أو رابط خرائط جوجل" />
+        <label>رسوم التوصيل:</label>
+        <input type="number" id="adm_fee" value="${store.info.delivery_fee || 0}" />
+
+        <h4 class="sec-title">إضافة صنف جديد</h4>
+        <input type="text" id="new_name" placeholder="اسم الصنف الجديد" />
+        <input type="text" id="new_desc" placeholder="وصف مختصر للصنف" />
+        <input type="number" id="new_price" placeholder="السعر" />
+        <select id="new_cat">
+          ${cats.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+        <button class="btn btn-dark" onclick="addNewItem()">+ إضافة الصنف للقائمة</button>
+
+        <h4 class="sec-title">الأصناف الحالية</h4>
+      `;
+
+      html += (store.items || []).map((it, idx) => `
+        <div style="border-bottom:1px solid #e2e8f0;padding:10px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>${it.name}</strong>
+            <button class="btn btn-danger" onclick="deleteItem(${idx})">حذف</button>
+          </div>
           السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:140px;display:inline-block;" />
           <label style="margin-right:10px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
         </div>
-      `).join("") + `<button class="btn btn-primary" style="margin-top:12px;" onclick="saveToGist()">حفظ التعديلات في Gist</button>`;
+      `).join("");
+
+      html += `<button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="saveToGist()">حفظ كل التعديلات في Gist</button>`;
+      ed.innerHTML = html;
+    }
+
+    function syncInputsToMemory() {
+      store.info.phone_whatsapp = document.getElementById("adm_phone").value.trim();
+      store.info.location_text = document.getElementById("adm_loc").value.trim();
+      store.info.delivery_fee = Number(document.getElementById("adm_fee").value || 0);
+      (store.items || []).forEach((it, idx) => {
+        const pEl = document.getElementById(`price_${idx}`);
+        const aEl = document.getElementById(`avail_${idx}`);
+        if (pEl) it.price = Number(pEl.value);
+        if (aEl) it.available = aEl.checked;
+      });
+    }
+
+    function addNewItem() {
+      syncInputsToMemory();
+      const name = document.getElementById("new_name").value.trim();
+      const desc = document.getElementById("new_desc").value.trim();
+      const price = Number(document.getElementById("new_price").value);
+      const category = document.getElementById("new_cat").value;
+      if (!name || !price) {
+        alert("يرجى إدخال اسم الصنف والسعر.");
+        return;
+      }
+      store.items = store.items || [];
+      store.items.push({
+        id: "i_" + Date.now(),
+        category,
+        name,
+        desc,
+        price,
+        available: true
+      });
+      renderAdminEditor();
+    }
+
+    function deleteItem(idx) {
+      syncInputsToMemory();
+      store.items.splice(idx, 1);
+      renderAdminEditor();
     }
 
     async function saveToGist() {
+      syncInputsToMemory();
       const tok = document.getElementById("ghTokenInput").value.trim() || localStorage.getItem("gh_gist_token");
       if (!tok) { alert("يرجى إدخال رمز GitHub Token"); return; }
-      (store.items || []).forEach((it, idx) => {
-        it.price = Number(document.getElementById(`price_${idx}`).value);
-        it.available = document.getElementById(`avail_${idx}`).checked;
-      });
       const res = await fetch(API_URL, {
         method: "PATCH",
         headers: { "Authorization": `Bearer ${tok}`, "Content-Type": "application/json" },
