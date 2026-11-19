@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المتاجر الذكية</title>
+  <style>
+    :root { --primary: #d97706; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    header { background: var(--primary); color: #fff; padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    header h1 { margin: 0; font-size: 1.15rem; }
+    .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .btn-light { background: rgba(255,255,255,.2); color: #fff; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-dark { background: #1e293b; color: #fff; }
+    .container { max-width: 720px; margin: 16px auto; padding: 0 14px; }
+    .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-weight: 600; }
+    .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+    .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
+    .cat-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 999px; padding: 6px 14px; white-space: nowrap; cursor: pointer; }
+    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .item-card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .item-title { font-weight: 700; margin-bottom: 4px; }
+    .item-desc { color: var(--muted); font-size: 0.85rem; margin-bottom: 6px; }
+    .item-price { font-weight: 700; color: var(--primary); }
+    .qty-box { display: flex; align-items: center; gap: 8px; }
+    .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,.08); }
+    .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid #e2e8f0; }
+    input { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; }
+    .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="storeName">جاري التحميل...</h1>
+    <button class="btn btn-light" onclick="toggleAdmin()">إدارة المحل</button>
+  </header>
+
+  <div class="container">
+    <div id="subBanner"></div>
+    <div id="storeContent">
+      <div class="cats" id="catsBar"></div>
+      <div id="itemsList"></div>
+    </div>
+
+    <div id="adminPanel" class="panel" style="display:none;">
+      <h3>لوحة إدارة المحل</h3>
+      <div id="adminLogin">
+        <label>رمز PIN الخاص بالمحل:</label>
+        <input type="password" id="pinInput" placeholder="أدخل رمز PIN" />
+        <label>رمز GitHub Token (يُحفظ في جهازك فقط للتحديث):</label>
+        <input type="password" id="ghTokenInput" placeholder="ghp_..." />
+        <button class="btn btn-dark" onclick="unlockAdmin()">دخول</button>
+      </div>
+      <div id="adminEditor" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="cart-bar" id="cartBar" style="display:none;">
+    <div>
+      <div>الإجمالي: <strong id="cartTotal">0</strong> <span id="currLabel"></span></div>
+      <small id="cartCount" style="color:var(--muted)">0 أصناف</small>
+    </div>
+    <button class="btn btn-primary" onclick="sendOrder()">إرسال الطلب</button>
+  </div>
+
+  <script>
+    const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
+    const RAW_URL = `https://gist.githubusercontent.com/Abo7na/${GIST_ID}/raw/stores.json?t=${Date.now()}`;
+    const params = new URLSearchParams(location.search);
+    const storeId = params.get("store") || "bakery1";
+
+    let dbData = null;
+    let store = null;
+    let activeCat = "الكل";
+    let cart = {};
+    let isSuspended = false;
+
+    async function init() {
+      try {
+        const res = await fetch(RAW_URL);
+        dbData = await res.json();
+        store = dbData.stores[storeId];
+        if (!store) {
+          document.getElementById("storeName").textContent = "المتجر غير موجود";
+          document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">لم يتم العثور على المتجر: ${storeId}</div>`;
+          return;
+        }
+        applyTheme();
+        checkSubscription();
+        renderMenu();
+      } catch (e) {
+        document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">تعذر تحميل بيانات المتجر.</div>`;
+      }
+    }
+
+    function applyTheme() {
+      document.title = store.info.name;
+      document.getElementById("storeName").textContent = store.info.name;
+      document.documentElement.style.setProperty("--primary", store.info.theme_color || "#d97706");
+      document.getElementById("currLabel").textContent = store.info.currency || "";
+    }
+
+    function checkSubscription() {
+      const sub = store.subscription || {};
+      const warnDays = (dbData.platform_settings && dbData.platform_settings.warning_days) || 3;
+      const graceDays = sub.grace_days ?? ((dbData.platform_settings && dbData.platform_settings.default_grace_days) || 3);
+      if (!sub.expiry_date) return;
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const exp = new Date(sub.expiry_date + "T00:00:00");
+      const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+      const banner = document.getElementById("subBanner");
+
+      if (diffDays < -graceDays || sub.status === "suspended") {
+        isSuspended = true;
+        banner.innerHTML = `<div class="alert alert-err">تم إيقاف صفحة المتجر مؤقتاً لانتهاء فترة الاشتراك والسماح. يرجى التواصل لتجديد الاشتراك.</div>`;
+        document.getElementById("storeContent").style.display = "none";
+        document.getElementById("cartBar").style.display = "none";
+      } else if (diffDays <= 0) {
+        banner.innerHTML = `<div class="alert alert-warn">انتهى تاريخ الاشتراك! لديك مهلة سماح (${graceDays} أيام) قبل الإيقاف التلقائي.</div>`;
+      } else if (diffDays <= warnDays) {
+        banner.innerHTML = `<div class="alert alert-warn">تنبيه: ينتهي اشتراك المتجر خلال ${diffDays} يوم (${sub.expiry_date}).</div>`;
+      }
+    }
+
+    function renderMenu() {
+      if (isSuspended) return;
+      const cats = ["الكل", ...(store.categories || [])];
+      const catsBar = document.getElementById("catsBar");
+      catsBar.innerHTML = cats.map(c => `<button class="cat-btn ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join("");
+
+      const filtered = (store.items || []).filter(i => activeCat === "الكل" || i.category === activeCat);
+      document.getElementById("itemsList").innerHTML = filtered.map(item => {
+        const q = cart[item.id] || 0;
+        return `
+          <div class="item-card">
+            <div>
+              <div class="item-title">${item.name} ${!item.available ? '<span class="badge-off">نفد</span>' : ''}</div>
+              <div class="item-desc">${item.desc || ""}</div>
+              <div class="item-price">${Number(item.price).toLocaleString()} ${store.info.currency || ""}</div>
+            </div>
+            <div class="qty-box">
+              ${item.available ? `
+                <button class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
+                <span>${q}</span>
+                <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+              ` : `<small style="color:var(--muted)">غير متوفر</small>`}
+            </div>
+          </div>
+        `;
+      }).join("");
+      updateCart();
+    }
+
+    function setCat(c) { activeCat = c; renderMenu(); }
+
+    function changeQty(id, delta) {
+      const next = (cart[id] || 0) + delta;
+      if (next <= 0) delete cart[id];
+      else cart[id] = next;
+      renderMenu();
+    }
+
+    function updateCart() {
+      if (isSuspended) return;
+      let count = 0, subtotal = 0;
+      for (const [id, qty] of Object.entries(cart)) {
+        const item = (store.items || []).find(x => x.id === id);
+        if (item) { count += qty; subtotal += item.price * qty; }
+      }
+      const bar = document.getElementById("cartBar");
+      if (count === 0) { bar.style.display = "none"; return; }
+      const fee = Number(store.info.delivery_fee || 0);
+      bar.style.display = "flex";
+      document.getElementById("cartCount").textContent = `${count} أصناف (التوصيل: ${fee.toLocaleString()})`;
+      document.getElementById("cartTotal").textContent = (subtotal + fee).toLocaleString();
+    }
+
+    function sendOrder() {
+      let lines = [`طلب جديد من *${store.info.name}*:`];
+      let subtotal = 0;
+      for (const [id, qty] of Object.entries(cart)) {
+        const item = (store.items || []).find(x => x.id === id);
+        if (item) {
+          const lineTotal = item.price * qty;
+          subtotal += lineTotal;
+          lines.push(`• ${item.name} × ${qty} = ${lineTotal.toLocaleString()} ${store.info.currency}`);
+        }
+      }
+      const fee = Number(store.info.delivery_fee || 0);
+      lines.push(`التوصيل: ${fee.toLocaleString()} ${store.info.currency}`);
+      lines.push(`*الإجمالي: ${(subtotal + fee).toLocaleString()} ${store.info.currency}*`);
+      const phone = (store.info.phone_whatsapp || "").replace(/\D/g, "");
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+      window.open(url, "_blank");
+    }
+
+    function toggleAdmin() {
+      const panel = document.getElementById("adminPanel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+      const savedToken = localStorage.getItem("gh_gist_token");
+      if (savedToken) document.getElementById("ghTokenInput").value = savedToken;
+    }
+
+    function unlockAdmin() {
+      const pin = document.getElementById("pinInput").value.trim();
+      const tok = document.getElementById("ghTokenInput").value.trim();
+      if (pin !== String(store.subscription.admin_pin)) {
+        alert("رمز PIN غير صحيح");
+        return;
+      }
+      if (tok) localStorage.setItem("gh_gist_token", tok);
+      document.getElementById("adminLogin").style.display = "none";
+      const ed = document.getElementById("adminEditor");
+      ed.style.display = "block";
+      ed.innerHTML = (store.items || []).map((it, idx) => `
+        <div style="border-bottom:1px solid #e2e8f0;padding:8px 0;">
+          <strong>${it.name}</strong><br/>
+          السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:140px;display:inline-block;" />
+          <label style="margin-right:10px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
+        </div>
+      `).join("") + `<button class="btn btn-primary" style="margin-top:12px;" onclick="saveToGist()">حفظ التعديلات في Gist</button>`;
+    }
+
+    async function saveToGist() {
+      const tok = document.getElementById("ghTokenInput").value.trim() || localStorage.getItem("gh_gist_token");
+      if (!tok) { alert("يرجى إدخال رمز GitHub Token"); return; }
+      (store.items || []).forEach((it, idx) => {
+        it.price = Number(document.getElementById(`price_${idx}`).value);
+        it.available = document.getElementById(`avail_${idx}`).checked;
+      });
+      const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${tok}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
+      });
+      if (res.ok) {
+        alert("تم حفظ التعديلات بنجاح!");
+        location.reload();
+      } else {
+        alert("فشل التحديث. تأكد من صلاحية gist في التوكن.");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
