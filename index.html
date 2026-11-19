@@ -7,7 +7,7 @@
   <style>
     :root { --primary: #d97706; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 110px; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 115px; }
     header { background: var(--primary); color: #fff; padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
     header h1 { margin: 0; font-size: 1.15rem; }
     .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
@@ -20,20 +20,28 @@
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
     .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88rem; color: var(--muted); border: 1px solid #e2e8f0; }
+    .offers-box { margin-bottom: 14px; }
+    .offer-card { background: linear-gradient(135deg, #fffbeb, #ffffff); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .offer-title { font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .offer-desc { font-size: 0.86rem; color: var(--text); }
+    .offer-price { font-weight: 700; margin-top: 4px; font-size: 0.9rem; }
     .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
     .cat-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 999px; padding: 6px 14px; white-space: nowrap; cursor: pointer; }
     .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .item-card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .item-card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .item-left { display: flex; align-items: center; gap: 12px; }
+    .item-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; flex-shrink: 0; }
     .item-title { font-weight: 700; margin-bottom: 4px; }
-    .item-desc { color: var(--muted); font-size: 0.85rem; margin-bottom: 6px; }
+    .item-desc { color: var(--muted); font-size: 0.84rem; margin-bottom: 6px; }
     .item-price { font-weight: 700; color: var(--primary); }
-    .qty-box { display: flex; align-items: center; gap: 8px; }
+    .qty-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
     .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 30; box-shadow: 0 -4px 12px rgba(0,0,0,.08); }
     .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid #e2e8f0; }
     input, select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; }
+    input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
     .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
-    .sec-title { margin: 14px 0 8px; font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+    .sec-title { margin: 16px 0 8px; font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
   </style>
 </head>
 <body>
@@ -46,6 +54,7 @@
     <div id="subBanner"></div>
     <div id="storeContent">
       <div id="storeMeta" class="store-meta" style="display:none;"></div>
+      <div id="offersBox" class="offers-box" style="display:none;"></div>
       <div class="cats" id="catsBar"></div>
       <div id="itemsList"></div>
     </div>
@@ -99,6 +108,7 @@
         }
         applyTheme();
         renderMeta();
+        renderOffers();
         checkSubscription();
         renderMenu();
       } catch (e) {
@@ -129,6 +139,23 @@
       } else {
         metaEl.style.display = "none";
       }
+    }
+
+    function renderOffers() {
+      const box = document.getElementById("offersBox");
+      const offers = store.offers || [];
+      if (!offers.length) {
+        box.style.display = "none";
+        return;
+      }
+      box.style.display = "block";
+      box.innerHTML = offers.map(o => `
+        <div class="offer-card">
+          <div class="offer-title">🔥 عرض خاص: ${o.title}</div>
+          <div class="offer-desc">${o.desc || ""}</div>
+          ${o.price ? `<div class="offer-price">سعر العرض: ${Number(o.price).toLocaleString()} ${store.info.currency || ""}</div>` : ""}
+        </div>
+      `).join("");
     }
 
     function checkSubscription() {
@@ -164,12 +191,16 @@
       const filtered = (store.items || []).filter(i => activeCat === "الكل" || i.category === activeCat);
       document.getElementById("itemsList").innerHTML = filtered.map(item => {
         const q = cart[item.id] || 0;
+        const imgTag = item.image ? `<img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.style.display='none'" />` : "";
         return `
           <div class="item-card">
-            <div>
-              <div class="item-title">${item.name} ${!item.available ? '<span class="badge-off">نفد</span>' : ''}</div>
-              <div class="item-desc">${item.desc || ""}</div>
-              <div class="item-price">${Number(item.price).toLocaleString()} ${store.info.currency || ""}</div>
+            <div class="item-left">
+              ${imgTag}
+              <div>
+                <div class="item-title">${item.name} ${!item.available ? '<span class="badge-off">نفد</span>' : ''}</div>
+                <div class="item-desc">${item.desc || ""}</div>
+                <div class="item-price">${Number(item.price).toLocaleString()} ${store.info.currency || ""}</div>
+              </div>
             </div>
             <div class="qty-box">
               ${item.available ? `
@@ -253,18 +284,38 @@
       const cats = store.categories || ["عام"];
 
       let html = `
-        <h4 class="sec-title">معلومات التواصل والموقع</h4>
+        <h4 class="sec-title">هوية المحل، التواصل والموقع</h4>
+        <label>اسم المحل:</label>
+        <input type="text" id="adm_name" value="${store.info.name || ""}" />
+        <label>لون المحل الأساسي:</label>
+        <input type="color" id="adm_color" value="${store.info.theme_color || "#d97706"}" />
         <label>رقم الواتساب (مع رمز الدولة، مثال: 9639xxxxxxxx):</label>
         <input type="text" id="adm_phone" value="${store.info.phone_whatsapp || ""}" />
         <label>موقع المحل / العنوان:</label>
-        <input type="text" id="adm_loc" value="${store.info.location_text || ""}" placeholder="مثال: دمشق - المزة أو رابط خرائط جوجل" />
+        <input type="text" id="adm_loc" value="${store.info.location_text || ""}" placeholder="مثال: دمشق - المزة أو رابط الخريطة" />
         <label>رسوم التوصيل:</label>
         <input type="number" id="adm_fee" value="${store.info.delivery_fee || 0}" />
+
+        <h4 class="sec-title">إضافة عرض جديد</h4>
+        <input type="text" id="new_offer_title" placeholder="عنوان العرض (مثال: عرض الجمعة على المعجنات)" />
+        <input type="text" id="new_offer_desc" placeholder="تفاصيل العرض" />
+        <input type="number" id="new_offer_price" placeholder="سعر العرض (اختياري)" />
+        <button class="btn btn-dark" onclick="addNewOffer()">+ إضافة العرض</button>
+
+        <div style="margin-top:10px;">
+          ${(store.offers || []).map((o, idx) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
+              <span>🔥 <strong>${o.title}</strong> ${o.price ? `- ${Number(o.price).toLocaleString()}` : ""}</span>
+              <button class="btn btn-danger" onclick="deleteOffer(${idx})">حذف</button>
+            </div>
+          `).join("")}
+        </div>
 
         <h4 class="sec-title">إضافة صنف جديد</h4>
         <input type="text" id="new_name" placeholder="اسم الصنف الجديد" />
         <input type="text" id="new_desc" placeholder="وصف مختصر للصنف" />
         <input type="number" id="new_price" placeholder="السعر" />
+        <input type="text" id="new_img" placeholder="رابط صورة الصنف (اختياري https://...)" />
         <select id="new_cat">
           ${cats.map(c => `<option value="${c}">${c}</option>`).join("")}
         </select>
@@ -279,8 +330,9 @@
             <strong>${it.name}</strong>
             <button class="btn btn-danger" onclick="deleteItem(${idx})">حذف</button>
           </div>
-          السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:140px;display:inline-block;" />
-          <label style="margin-right:10px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
+          السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:130px;display:inline-block;" />
+          <label style="margin-right:8px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
+          <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط صورة الصنف (اختياري)" />
         </div>
       `).join("");
 
@@ -289,15 +341,38 @@
     }
 
     function syncInputsToMemory() {
+      const nameEl = document.getElementById("adm_name");
+      if (!nameEl) return;
+      store.info.name = nameEl.value.trim() || store.info.name;
+      store.info.theme_color = document.getElementById("adm_color").value || store.info.theme_color;
       store.info.phone_whatsapp = document.getElementById("adm_phone").value.trim();
       store.info.location_text = document.getElementById("adm_loc").value.trim();
       store.info.delivery_fee = Number(document.getElementById("adm_fee").value || 0);
       (store.items || []).forEach((it, idx) => {
         const pEl = document.getElementById(`price_${idx}`);
         const aEl = document.getElementById(`avail_${idx}`);
+        const iEl = document.getElementById(`img_${idx}`);
         if (pEl) it.price = Number(pEl.value);
         if (aEl) it.available = aEl.checked;
+        if (iEl) it.image = iEl.value.trim();
       });
+    }
+
+    function addNewOffer() {
+      syncInputsToMemory();
+      const title = document.getElementById("new_offer_title").value.trim();
+      const desc = document.getElementById("new_offer_desc").value.trim();
+      const price = Number(document.getElementById("new_offer_price").value || 0);
+      if (!title) { alert("يرجى إدخال عنوان العرض."); return; }
+      store.offers = store.offers || [];
+      store.offers.push({ id: "o_" + Date.now(), title, desc, price });
+      renderAdminEditor();
+    }
+
+    function deleteOffer(idx) {
+      syncInputsToMemory();
+      store.offers.splice(idx, 1);
+      renderAdminEditor();
     }
 
     function addNewItem() {
@@ -305,6 +380,7 @@
       const name = document.getElementById("new_name").value.trim();
       const desc = document.getElementById("new_desc").value.trim();
       const price = Number(document.getElementById("new_price").value);
+      const image = document.getElementById("new_img").value.trim();
       const category = document.getElementById("new_cat").value;
       if (!name || !price) {
         alert("يرجى إدخال اسم الصنف والسعر.");
@@ -317,6 +393,7 @@
         name,
         desc,
         price,
+        image,
         available: true
       });
       renderAdminEditor();
