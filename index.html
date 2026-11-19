@@ -39,7 +39,7 @@
     .qty-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
     .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 14px; border: 1px solid #e2e8f0; }
-    input, select, textarea { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; font-size: 0.9rem; }
+    input, select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; font-size: 0.9rem; }
     input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
     .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
     .checkout-box { background: var(--card); border-radius: 12px; padding: 14px; margin-top: 14px; border: 1px solid #cbd5e1; }
@@ -64,7 +64,7 @@
       <h1 id="storeName">جاري التحميل...</h1>
       <span class="sub-tag" id="storeTypeTag"></span>
     </div>
-    <button class="btn btn-light" onclick="toggleAdmin()">إدارة المحل</button>
+    <button id="adminHeaderBtn" class="btn btn-light" style="display:none;" onclick="toggleAdmin()">إدارة المحل</button>
   </header>
 
   <div class="container">
@@ -130,11 +130,7 @@
       <div id="adminLogin">
         <label>رمز PIN الخاص بالمحل:</label>
         <input type="password" id="pinInput" placeholder="أدخل رمز PIN" />
-        <button class="btn btn-dark" onclick="unlockAdmin()">دخول برمز PIN</button>
-        <hr style="margin:14px 0;border:none;border-top:1px solid #e2e8f0;" />
-        <label>دخول مدير المنصة فقط (حفظ مباشر في Gist عبر Token):</label>
-        <input type="password" id="ghTokenInput" placeholder="ghp_... (خاص بالمشرف فقط)" />
-        <button class="btn btn-primary" onclick="unlockMasterWithToken()">دخول كمشرف منصة</button>
+        <button class="btn btn-primary" style="width:100%;" onclick="unlockAdmin()">دخول</button>
       </div>
       <div id="adminWorkspace" style="display:none;"></div>
     </div>
@@ -151,9 +147,17 @@
   <script>
     const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
     const API_URL = `https://api.github.com/gists/${GIST_ID}`;
-    const PLATFORM_WHATSAPP = "963900000000";
     const params = new URLSearchParams(location.search);
     const storeId = params.get("store") || "bakery1";
+    const isAdminRoute = params.get("admin") === "1";
+
+    (function captureSecretKeyFromHash() {
+      if (location.hash && location.hash.startsWith("#key=")) {
+        const rawKey = decodeURIComponent(location.hash.slice(5)).trim();
+        if (rawKey) localStorage.setItem("smart_store_sync_key", rawKey);
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+    })();
 
     const TYPE_LABELS = {
       bakery: "معجنات ومخبوزات",
@@ -171,9 +175,12 @@
     let loyaltyDiscountPct = 0;
     let activeAdminTab = "orders";
     let ordersFilter = "all";
-    let isMasterMode = false;
 
     async function init() {
+      if (isAdminRoute) {
+        document.getElementById("adminHeaderBtn").style.display = "inline-block";
+        document.getElementById("adminPanel").style.display = "block";
+      }
       try {
         const res = await fetch(API_URL, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -188,7 +195,6 @@
           return;
         }
         ensureStoreStructure();
-        applyLocalDraftIfExists();
         applyTheme();
         renderMeta();
         renderOffers();
@@ -217,22 +223,6 @@
       store.promos.coupons = store.promos.coupons || [];
     }
 
-    function applyLocalDraftIfExists() {
-      const draft = localStorage.getItem("draft_store_" + storeId);
-      if (draft) {
-        try {
-          const parsed = JSON.parse(draft);
-          dbData.stores[storeId] = parsed;
-          store = parsed;
-          ensureStoreStructure();
-        } catch (_) {}
-      }
-    }
-
-    function saveDraftLocal() {
-      localStorage.setItem("draft_store_" + storeId, JSON.stringify(store));
-    }
-
     function applyTheme() {
       const t = store.info.type || "bakery";
       document.title = store.info.name;
@@ -241,9 +231,7 @@
       document.documentElement.style.setProperty("--primary", store.info.theme_color || "#d97706");
       document.getElementById("currLabel").textContent = store.info.currency || "";
 
-      if (t === "market" || t === "tobacco") {
-        document.getElementById("searchInput").style.display = "block";
-      }
+      if (t === "market" || t === "tobacco") document.getElementById("searchInput").style.display = "block";
       if (t === "barber") {
         document.getElementById("deliveryFields").style.display = "none";
         document.getElementById("barberFields").style.display = "block";
@@ -314,11 +302,9 @@
     function checkOpenStatus() {
       if (isSuspended) return;
       const cb = document.getElementById("closedBanner");
-      if (store.info.is_open === false) {
-        cb.innerHTML = `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً.</div>`;
-      } else {
-        cb.innerHTML = "";
-      }
+      cb.innerHTML = store.info.is_open === false
+        ? `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً.</div>`
+        : "";
     }
 
     function loadSavedCustomerLocal() {
@@ -485,10 +471,7 @@
     }
 
     function submitOrder() {
-      if (store.info.is_open === false) {
-        alert("المتجر مغلق مؤقتاً لاستقبال الطلبات.");
-        return;
-      }
+      if (store.info.is_open === false) { alert("المتجر مغلق مؤقتاً لاستقبال الطلبات."); return; }
       const phone = document.getElementById("custPhone").value.trim();
       const name = document.getElementById("custName").value.trim();
       const address = document.getElementById("custAddress").value.trim();
@@ -529,8 +512,6 @@
     function toggleAdmin() {
       const panel = document.getElementById("adminPanel");
       panel.style.display = panel.style.display === "none" ? "block" : "none";
-      const savedToken = localStorage.getItem("gh_gist_token");
-      if (savedToken) document.getElementById("ghTokenInput").value = savedToken;
     }
 
     function unlockAdmin() {
@@ -539,16 +520,6 @@
         alert("رمز PIN غير صحيح");
         return;
       }
-      isMasterMode = false;
-      document.getElementById("adminLogin").style.display = "none";
-      renderAdminWorkspace();
-    }
-
-    function unlockMasterWithToken() {
-      const tok = document.getElementById("ghTokenInput").value.trim();
-      if (!tok) { alert("أدخل رمز GitHub Token الخاص بالمشرف."); return; }
-      localStorage.setItem("gh_gist_token", tok);
-      isMasterMode = true;
       document.getElementById("adminLogin").style.display = "none";
       renderAdminWorkspace();
     }
@@ -574,31 +545,6 @@
       else if (activeAdminTab === "items") renderItemsTab();
       else if (activeAdminTab === "settings") renderSettingsTab();
       else if (activeAdminTab === "customers") renderCustomersTab();
-    }
-
-    function renderSaveActionButtons() {
-      saveDraftLocal();
-      if (isMasterMode) {
-        return `<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveToGistDirect()">حفظ ونشر مباشرة في Gist (وضع المشرف)</button>`;
-      }
-      return `
-        <div class="alert alert-warn" style="margin-top:14px;">
-          تم حفظ التعديلات كمسودة على هذا الجهاز. لإرسالها للمشرف لاعتمادها ونشرها دون كشف أي أسرار:
-        </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="sendChangesToPlatformOwner()">إرسال ملخص التعديلات للمشرف عبر واتساب</button>
-      `;
-    }
-
-    function sendChangesToPlatformOwner() {
-      saveDraftLocal();
-      const summary = [
-        `تحديث بيانات المتجر: *${store.info.name}* (${storeId})`,
-        `الحالة: ${store.info.is_open === false ? "مغلق" : "مفتوح"}`,
-        `الهاتف: ${store.info.phone_whatsapp || "-"} | الموقع: ${store.info.location_text || "-"}`,
-        `التوصيل: ${store.info.delivery_type === "free" ? "مجاني" : (store.info.delivery_fee || 0)}`,
-        `عدد الأصناف: ${store.items.length} | عدد العروض: ${store.offers.length} | عدد الطلبات: ${store.orders.length}`
-      ].join("\n");
-      window.open(`https://wa.me/${PLATFORM_WHATSAPP}?text=${encodeURIComponent(summary)}`, "_blank");
     }
 
     function renderOrdersTab() {
@@ -669,11 +615,11 @@
             </div>
           `;
         }).join("")}
-        ${renderSaveActionButtons()}
+        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveAllDirect()">حفظ التعديلات تلقائياً</button>
       `;
     }
 
-    function addOrderRecord() {
+    async function addOrderRecord() {
       const phone = document.getElementById("new_ord_phone").value.trim();
       const name = document.getElementById("new_ord_name").value.trim();
       const summary = document.getElementById("new_ord_summary").value.trim();
@@ -693,7 +639,7 @@
         status: "pending"
       });
       upsertCustomer(phone, name, 0, 0);
-      saveDraftLocal();
+      await saveAllDirect(true);
       renderOrdersTab();
     }
 
@@ -712,14 +658,14 @@
       store.customers[phone].last_order_at = new Date().toISOString().slice(0, 10);
     }
 
-    function approveOrder(orderId) {
+    async function approveOrder(orderId) {
       const ord = store.orders.find(x => x.id === orderId);
       if (!ord) return;
       const eta = document.getElementById(`eta_${orderId}`).value.trim() || "في أقرب وقت";
       ord.delivery_eta = eta;
       ord.status = "completed";
       upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total);
-      saveDraftLocal();
+      await saveAllDirect(true);
 
       const curr = store.info.currency || "";
       const invoiceText = [
@@ -735,13 +681,13 @@
       renderOrdersTab();
     }
 
-    function rejectOrder(orderId) {
+    async function rejectOrder(orderId) {
       const ord = store.orders.find(x => x.id === orderId);
       if (!ord) return;
       const reason = document.getElementById(`rej_${orderId}`).value.trim() || "تعذر تنفيذ الطلب حالياً";
       ord.reject_reason = reason;
       ord.status = "rejected";
-      saveDraftLocal();
+      await saveAllDirect(true);
 
       const apologyText = [
         `نعتذر منك *${ord.customer_name || "عزيزنا الزبون"}* بخصوص الطلب *#${ord.id}* من *${store.info.name}*.`,
@@ -763,7 +709,7 @@
         ${store.offers.map((o, i) => `
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
             <span>🔥 <strong>${o.title}</strong></span>
-            <button class="btn btn-danger" onclick="store.offers.splice(${i},1);saveDraftLocal();renderItemsTab()">حذف</button>
+            <button class="btn btn-danger" onclick="deleteOffer(${i})">حذف</button>
           </div>
         `).join("")}
 
@@ -781,28 +727,34 @@
         <div style="border-bottom:1px solid #e2e8f0;padding:10px 0;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <strong>${it.name}</strong>
-            <button class="btn btn-danger" onclick="store.items.splice(${idx},1);saveDraftLocal();renderItemsTab()">حذف</button>
+            <button class="btn btn-danger" onclick="deleteItem(${idx})">حذف</button>
           </div>
           السعر: <input type="number" id="price_${idx}" value="${it.price}" style="width:130px;display:inline-block;" />
           <label style="margin-right:8px;"><input type="checkbox" id="avail_${idx}" ${it.available ? "checked" : ""} style="width:auto;" /> متوفر</label>
           <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط الصورة" />
         </div>
       `).join("");
-      html += renderSaveActionButtons();
+      html += `<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncItemsAndSave()">حفظ التعديلات تلقائياً</button>`;
       document.getElementById("adminTabBody").innerHTML = html;
     }
 
-    function addOffer() {
+    async function addOffer() {
       const title = document.getElementById("new_offer_title").value.trim();
       const desc = document.getElementById("new_offer_desc").value.trim();
       const price = Number(document.getElementById("new_offer_price").value || 0);
       if (!title) { alert("أدخل عنوان العرض."); return; }
       store.offers.push({ id: "o_" + Date.now(), title, desc, price });
-      saveDraftLocal();
+      await saveAllDirect(true);
       renderItemsTab();
     }
 
-    function addItem() {
+    async function deleteOffer(i) {
+      store.offers.splice(i, 1);
+      await saveAllDirect(true);
+      renderItemsTab();
+    }
+
+    async function addItem() {
       const name = document.getElementById("new_name").value.trim();
       const desc = document.getElementById("new_desc").value.trim();
       const price = Number(document.getElementById("new_price").value);
@@ -810,8 +762,26 @@
       const category = document.getElementById("new_cat").value;
       if (!name || !price) { alert("أدخل اسم الصنف والسعر."); return; }
       store.items.push({ id: "i_" + Date.now(), category, name, desc, price, image, available: true });
-      saveDraftLocal();
+      await saveAllDirect(true);
       renderItemsTab();
+    }
+
+    async function deleteItem(idx) {
+      store.items.splice(idx, 1);
+      await saveAllDirect(true);
+      renderItemsTab();
+    }
+
+    async function syncItemsAndSave() {
+      store.items.forEach((it, idx) => {
+        const p = document.getElementById(`price_${idx}`);
+        const a = document.getElementById(`avail_${idx}`);
+        const im = document.getElementById(`img_${idx}`);
+        if (p) it.price = Number(p.value);
+        if (a) it.available = a.checked;
+        if (im) it.image = im.value.trim();
+      });
+      await saveAllDirect(false);
     }
 
     function renderSettingsTab() {
@@ -862,22 +832,49 @@
         ${coupons.map((c, i) => `
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:6px 0;">
             <span>🎟️ <strong>${c.code}</strong></span>
-            <button class="btn btn-danger" onclick="store.promos.coupons.splice(${i},1);saveDraftLocal();renderSettingsTab()">حذف</button>
+            <button class="btn btn-danger" onclick="deleteCoupon(${i})">حذف</button>
           </div>
         `).join("")}
 
-        ${renderSaveActionButtons()}
+        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncSettingsAndSave()">حفظ الإعدادات تلقائياً</button>
       `;
     }
 
-    function addCoupon() {
+    async function addCoupon() {
       const code = document.getElementById("new_cp_code").value.trim().toUpperCase();
       const type = document.getElementById("new_cp_type").value;
       const value = Number(document.getElementById("new_cp_val").value || 0);
       if (!code || !value) { alert("أدخل الكود وقيمة الخصم."); return; }
       store.promos.coupons.push({ code, type, value, active: true });
-      saveDraftLocal();
+      await saveAllDirect(true);
       renderSettingsTab();
+    }
+
+    async function deleteCoupon(i) {
+      store.promos.coupons.splice(i, 1);
+      await saveAllDirect(true);
+      renderSettingsTab();
+    }
+
+    async function syncSettingsAndSave() {
+      store.info.name = document.getElementById("set_name").value.trim() || store.info.name;
+      store.info.theme_color = document.getElementById("set_color").value;
+      store.info.is_open = document.getElementById("set_open").checked;
+      store.info.phone_whatsapp = document.getElementById("set_phone").value.trim();
+      store.info.location_text = document.getElementById("set_loc").value.trim();
+      store.info.delivery_type = document.getElementById("set_del_type").value;
+      store.info.delivery_fee = Number(document.getElementById("set_fee").value || 0);
+      store.info.shamcash = {
+        account_code: document.getElementById("set_sc_code").value.trim(),
+        account_name: document.getElementById("set_sc_name").value.trim(),
+        notes: (store.info.shamcash && store.info.shamcash.notes) || ""
+      };
+      store.promos.loyalty = {
+        enabled: document.getElementById("set_loy_en").checked,
+        every_n_orders: Number(document.getElementById("set_loy_n").value || 3),
+        discount_percent: Number(document.getElementById("set_loy_pct").value || 10)
+      };
+      await saveAllDirect(false);
     }
 
     function renderCustomersTab() {
@@ -895,24 +892,27 @@
             </small>
           </div>
         `).join("")}
-        ${renderSaveActionButtons()}
       `;
     }
 
-    async function saveToGistDirect() {
-      const tok = document.getElementById("ghTokenInput").value.trim() || localStorage.getItem("gh_gist_token");
-      if (!tok) { alert("يرجى إدخال رمز GitHub Token الخاص بالمشرف."); return; }
+    async function saveAllDirect(silent) {
+      const syncKey = localStorage.getItem("smart_store_sync_key");
+      if (!syncKey) {
+        alert("هذا الجهاز غير مفعّل للحفظ التلقائي. افتح رابط التفعيل الخاص بالإدارة مرة واحدة.");
+        return;
+      }
       const res = await fetch(API_URL, {
         method: "PATCH",
-        headers: { "Authorization": `Bearer ${tok}`, "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${syncKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
       });
       if (res.ok) {
-        localStorage.removeItem("draft_store_" + storeId);
-        alert("تم حفظ ونشر التعديلات بنجاح في Gist!");
-        location.reload();
+        if (!silent) {
+          alert("تم حفظ التعديلات ونشرها تلقائياً!");
+          location.reload();
+        }
       } else {
-        alert("فشل التحديث. تأكد من صحة التوكن وصلاحية gist.");
+        alert("تعذر الحفظ التلقائي. تأكد من صلاحية Gists في مفتاح التفعيل.");
       }
     }
 
