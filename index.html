@@ -3,27 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>المتاجر الذكية</title>
+  <title>المنصة الذكية للمتاجر</title>
   <style>
     :root { --primary: #d97706; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 130px; }
-    header { background: var(--primary); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 25; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-    header h1 { margin: 0; font-size: 1.1rem; }
+    header { background: var(--primary); color: #fff; padding: 15px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 25; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    header h1 { margin: 0; font-size: 1.08rem; }
     .sub-tag { font-size: 0.78rem; opacity: 0.92; display: block; margin-top: 2px; }
-    .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+    .btn { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 0.86rem; text-decoration: none; display: inline-block; }
     .btn-light { background: rgba(255,255,255,.22); color: #fff; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-dark { background: #1e293b; color: #fff; }
     .btn-ok { background: #15803d; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
     .btn-danger { background: #dc2626; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
     .btn-sec { background: #e2e8f0; color: #0f172a; padding: 6px 10px; font-size: 0.82rem; }
-    .container { max-width: 760px; margin: 14px auto; padding: 0 14px; }
-    .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; }
+    .container { max-width: 780px; margin: 14px auto; padding: 0 14px; }
+    .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; line-height: 1.5; }
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
     .alert-ok { background: #dcfce7; color: #166534; border: 1px solid #22c55e; }
+    .alert-info { background: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
     .store-meta { background: var(--card); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.86rem; color: var(--muted); border: 1px solid #e2e8f0; }
+    .ad-banner { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .ad-badge { background: #e2e8f0; color: #475569; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; }
     .offers-box { margin-bottom: 12px; }
     .offer-card { background: linear-gradient(135deg, #fffbeb, #ffffff); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
     .offer-title { font-weight: 800; color: var(--primary); margin-bottom: 4px; }
@@ -40,7 +43,7 @@
     .qty-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer; }
     .panel { background: var(--card); border-radius: 12px; padding: 16px; margin-top: 14px; border: 1px solid #e2e8f0; }
-    input, select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; font-size: 0.9rem; }
+    input, select, textarea { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background: #fff; font-size: 0.9rem; }
     input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
     .badge-off { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
     .checkout-box { background: var(--card); border-radius: 12px; padding: 14px; margin-top: 14px; border: 1px solid #cbd5e1; }
@@ -50,13 +53,16 @@
     .tab-btn.active { background: var(--primary); color: #fff; }
     .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
     .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
-    .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
+    .stat-val { font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
     .order-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fff; }
     .st-pending { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
     .st-completed { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
     .st-rejected { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
     .sec-title { margin: 16px 0 8px; font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
     .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .creator-footer { margin-top: 28px; background: #0f172a; color: #f8fafc; border-radius: 14px; padding: 16px; text-align: center; }
+    .creator-footer p { margin: 6px 0 12px; font-size: 0.88rem; color: #cbd5e1; }
+    .lock-card { background: #fff; border: 2px solid #ef4444; border-radius: 14px; padding: 18px; margin: 16px 0; }
   </style>
 </head>
 <body>
@@ -65,32 +71,30 @@
       <h1 id="storeName">جاري التحميل...</h1>
       <span class="sub-tag" id="storeTypeTag"></span>
     </div>
-    <div>
-      <button class="btn btn-light" onclick="toggleMyOrders()">طلباتي</button>
-      <button id="adminHeaderBtn" class="btn btn-light" style="display:none;margin-right:4px;" onclick="toggleAdmin()">إدارة المحل</button>
+    <div id="headerActions">
+      <button id="myOrdersBtn" class="btn btn-light" onclick="toggleMyOrders()">طلباتي</button>
     </div>
   </header>
 
-  <div class="container">
+  <div class="container" id="mainContainer">
     <div id="subBanner"></div>
     <div id="closedBanner"></div>
     <div id="orderSuccessBanner"></div>
 
-    <!-- متابعة حالة طلبات الزبون داخل الموقع -->
+    <!-- متابعة طلبات الزبون (مقيدة بجهاز الزبون فقط لمنع التجسس) -->
     <div id="myOrdersPanel" class="panel" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="margin:0;">متابعة طلباتي</h3>
-        <button class="btn btn-sec" onclick="toggleMyOrders()">إغلاق</button>
-      </div>
-      <label>أدخل رقم هاتفك لعرض حالة طلباتك والفواتير:</label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="tel" id="trackPhoneInput" placeholder="09xxxxxxxx" style="margin:0;" />
-        <button class="btn btn-primary" onclick="renderCustomerOrders()">بحث</button>
+        <h3 style="margin:0;">طلباتي على هذا الجهاز</h3>
+        <div>
+          <button class="btn btn-sec" onclick="renderCustomerOrders()">🔄 تحديث</button>
+          <button class="btn btn-sec" onclick="toggleMyOrders()">إغلاق</button>
+        </div>
       </div>
       <div id="customerOrdersList" style="margin-top:12px;"></div>
     </div>
 
     <div id="storeContent">
+      <div id="adSlot"></div>
       <div id="storeMeta" class="store-meta" style="display:none;"></div>
       <div id="offersBox" class="offers-box" style="display:none;"></div>
       <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن صنف أو منتج..." oninput="renderMenu()" style="display:none;" />
@@ -123,6 +127,11 @@
           <input type="time" id="bookTime" />
         </div>
 
+        <div id="retailOptionField" style="display:none;">
+          <label>المقاس / اللون / ملاحظة على المنتج:</label>
+          <input type="text" id="itemVariantNote" placeholder="مثال: مقاس L - لون أسود" />
+        </div>
+
         <label>كوبون خصم (إن وجد):</label>
         <div style="display:flex;gap:8px;align-items:center;">
           <input type="text" id="couponCode" placeholder="أدخل كود الخصم" style="margin:0;" />
@@ -144,15 +153,11 @@
       </div>
     </div>
 
-    <div id="adminPanel" class="panel" style="display:none;">
-      <h3 style="margin-top:0;">لوحة إدارة المحل</h3>
-      <div id="adminLogin">
-        <label>رمز PIN الخاص بالمحل:</label>
-        <input type="password" id="pinInput" placeholder="أدخل رمز PIN" />
-        <button class="btn btn-primary" style="width:100%;" onclick="unlockAdmin()">دخول</button>
-      </div>
-      <div id="adminWorkspace" style="display:none;"></div>
-    </div>
+    <!-- منطقة الإدارة الديناميكية (تُبنى فقط في وضع الإدارة وبعد التحقق) -->
+    <div id="dynamicAdminHost"></div>
+
+    <!-- بطاقة منشئ المنصة المركزية (تتحدث تلقائياً على جميع المتاجر) -->
+    <div id="creatorFooterHost"></div>
   </div>
 
   <div class="cart-bar" id="cartBar" style="display:none;">
@@ -164,16 +169,19 @@
   </div>
 
   <script>
-    const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
-    const API_URL = `https://api.github.com/gists/${GIST_ID}`;
-
-    // ضع نصفي توكن Gists فقط (Read/Write) هنا لتمكين إرسال طلبات الزبائن للموقع مباشرة
-    const K_PART_1 = "github_pat_11BSJON7I0jeJRVjfLge5q_vhGUYtbe8bT0TuZyuGI";
-    const K_PART_2 = "hglY8mSjw5SjWUz0UUEqGwguKB4KCSXBgiXfroKX";
-
-    const params = new URLSearchParams(location.search);
-    const storeId = params.get("store") || "bakery1";
-    const isAdminRoute = params.get("admin") === "1";
+    // =========================================================
+    // 1. طبقة الاتصال بقاعدة البيانات (قابلة للنقل لأي استضافة مدفوعة)
+    // =========================================================
+    const DB_CONFIG = {
+      mode: "gist", // مستقبلاً يمكن تغييره إلى "custom_api"
+      gistId: "29a880a7f2a8e52e7ca8192168eae9e9",
+      customApiUrl: "",
+      // ضع نصفي توكن Gists (Read & Write) هنا
+      kPart1: "github_pat_11BSJON7I0jeJRVjfLge5q_vhGUYtbe8bT0TuZyuGIhglY8mSjw5",
+      kPart2: "SjWUz0UUEqGwguKB4KCSXBgiXfroKX",
+      // رمز دخولك السري كمالك للمنصة (غيّره لرمز قوي خاص بك)
+      superAdminPin: "asmaa1993"
+    };
 
     (function captureSecretKeyFromHash() {
       if (location.hash && location.hash.startsWith("#key=")) {
@@ -186,88 +194,351 @@
     function getSyncToken() {
       const stored = localStorage.getItem("smart_store_sync_key");
       if (stored) return stored;
-      const combined = (K_PART_1 + K_PART_2).trim();
+      const combined = (DB_CONFIG.kPart1 + DB_CONFIG.kPart2).trim();
       if (combined && !combined.includes("ضع_النصف")) return combined;
       return "";
     }
 
-    const TYPE_LABELS = {
-      bakery: "معجنات ومخبوزات",
-      market: "سوبر ماركت ومواد غذائية",
-      barber: "صالون حلاقة وحجز مواعيد",
-      tobacco: "مركز تبغ ومعسل"
+    const DB_ADAPTER = {
+      async load() {
+        if (DB_CONFIG.mode === "custom_api") {
+          const res = await fetch(DB_CONFIG.customApiUrl, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return await res.json();
+        }
+        const res = await fetch(`https://api.github.com/gists/${DB_CONFIG.gistId}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const gist = await res.json();
+        const fileObj = gist.files["stores.json"] || Object.values(gist.files)[0];
+        if (!fileObj || !fileObj.content) throw new Error("ملف stores.json فارغ");
+        return JSON.parse(fileObj.content);
+      },
+      async save(fullData) {
+        const token = getSyncToken();
+        if (!token) return false;
+        if (DB_CONFIG.mode === "custom_api") {
+          const res = await fetch(DB_CONFIG.customApiUrl, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify(fullData)
+          });
+          return res.ok;
+        }
+        const res = await fetch(`https://api.github.com/gists/${DB_CONFIG.gistId}`, {
+          method: "PATCH",
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(fullData, null, 2) } } })
+        });
+        return res.ok;
+      }
+    };
+
+    // =========================================================
+    // 2. المتغيرات والتهيئة العامة
+    // =========================================================
+    const params = new URLSearchParams(location.search);
+    const storeId = params.get("store") || "bakery1";
+    const isStoreAdminRoute = params.get("admin") === "1";
+    const isSuperAdminRoute = params.get("superadmin") === "1";
+
+    const TEMPLATES = {
+      bakery: {
+        label: "معجنات ومخبوزات ومطاعم",
+        categories: ["مناقيش", "بيتزا", "معجنات", "مشروبات"],
+        sampleItems: [
+          { id: "i_1", category: "مناقيش", name: "منقوشة زعتر بلدي", desc: "زعتر مع زيت زيتون", price: 15000, available: true },
+          { id: "i_2", category: "بيتزا", name: "بيتزا خضار وسط", desc: "فطر، زيتون، فليفلة، جبنة", price: 45000, available: true }
+        ]
+      },
+      market: {
+        label: "سوبر ماركت ومواد غذائية",
+        categories: ["مواد غذائية", "ألبان وأجبان", "منظفات", "مشروبات"],
+        sampleItems: [
+          { id: "i_1", category: "مواد غذائية", name: "أرز بسمتي 1 كغ", desc: "حبة طويلة فاخر", price: 22000, available: true },
+          { id: "i_2", category: "ألبان وأجبان", name: "لبنة بلدية 500 غ", desc: "طازجة يومياً", price: 18000, available: true }
+        ]
+      },
+      tobacco: {
+        label: "مركز تبغ ومعسل",
+        categories: ["معسل", "فحم", "مستلزمات أراكيل", "مشروبات"],
+        sampleItems: [
+          { id: "i_1", category: "معسل", name: "معسل تفاحتين فاخر 250 غ", desc: "نكهة أصلية", price: 35000, available: true },
+          { id: "i_2", category: "فحم", name: "فحم جوز الهند 1 كغ", desc: "سريع الاشتعال وبدون رائحة", price: 25000, available: true }
+        ]
+      },
+      barber: {
+        label: "صالون حلاقة وحجز مواعيد",
+        categories: ["قص شعر", "حلاقة ذقن", "عناية وبشرة", "باقات"],
+        sampleItems: [
+          { id: "i_1", category: "قص شعر", name: "قصة شعر عصرية", desc: "مع غسيل وتصفيف", price: 30000, available: true },
+          { id: "i_2", category: "باقات", name: "باقة عريس / VIP", desc: "شعر + ذقن + تنظيف بشرة", price: 75000, available: true }
+        ]
+      },
+      retail: {
+        label: "ملابس وإلكترونيات وهدايا",
+        categories: ["رجالي", "نسائي", "إكسسوارات", "عروض"],
+        sampleItems: [
+          { id: "i_1", category: "رجالي", name: "تيشيرت قطن 100%", desc: "متوفر بعدة مقاسات وألوان", price: 85000, available: true }
+        ]
+      },
+      custom: {
+        label: "متجر متنوع",
+        categories: ["الرئيسية", "عروض"],
+        sampleItems: [
+          { id: "i_1", category: "الرئيسية", name: "منتج تجريبي 1", desc: "وصف المنتج", price: 20000, available: true }
+        ]
+      }
     };
 
     let dbData = null;
     let store = null;
     let activeCat = "الكل";
     let cart = {};
-    let isSuspended = false;
+    let isLocked = false;
+    let lockDetails = null;
     let appliedCoupon = null;
     let loyaltyDiscountPct = 0;
     let activeAdminTab = "orders";
-    let ordersFilter = "all";
+    let ordersFilter = "pending";
+    let activeSuperTab = "stores";
+    let superFilter = "all";
+
+    function getDeviceClientId() {
+      let cid = localStorage.getItem("smart_store_device_cid");
+      if (!cid) {
+        cid = "CID_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+        localStorage.setItem("smart_store_device_cid", cid);
+      }
+      return cid;
+    }
+
+    function checkRateLimit(scopeKey) {
+      const raw = JSON.parse(localStorage.getItem("rl_" + scopeKey) || '{"fails":0,"until":0}');
+      if (Date.now() < raw.until) {
+        const mins = Math.ceil((raw.until - Date.now()) / 60000);
+        alert(`تم قفل المحاولة مؤقتاً بسبب تكرار الرمز الخاطئ. حاول بعد ${mins} دقيقة.`);
+        return false;
+      }
+      return true;
+    }
+
+    function recordAuthResult(scopeKey, success) {
+      if (success) {
+        localStorage.removeItem("rl_" + scopeKey);
+        return;
+      }
+      const raw = JSON.parse(localStorage.getItem("rl_" + scopeKey) || '{"fails":0,"until":0}');
+      raw.fails += 1;
+      if (raw.fails >= 5) {
+        raw.until = Date.now() + 5 * 60 * 1000;
+        raw.fails = 0;
+      }
+      localStorage.setItem("rl_" + scopeKey, JSON.stringify(raw));
+    }
 
     async function fetchFreshDB() {
-      const res = await fetch(API_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const gist = await res.json();
-      const fileObj = gist.files["stores.json"] || Object.values(gist.files)[0];
-      if (!fileObj || !fileObj.content) throw new Error("ملف stores.json فارغ أو غير موجود");
-      dbData = JSON.parse(fileObj.content);
+      dbData = await DB_ADAPTER.load();
+      ensureGlobalStructure();
       store = dbData.stores[storeId];
       if (store) ensureStoreStructure();
     }
 
+    function ensureGlobalStructure() {
+      dbData.platform_settings = dbData.platform_settings || {};
+      const ps = dbData.platform_settings;
+      ps.platform_name = ps.platform_name || "منصة المتاجر الذكية";
+      ps.creator_name = ps.creator_name || "إدارة المنصة";
+      ps.creator_whatsapp = ps.creator_whatsapp || "963900000000";
+      ps.creator_link = ps.creator_link || "";
+      ps.promo_tagline = ps.promo_tagline || "هل ترغب بموقع إلكتروني خاص بمتجرك أو مشروعك؟ تواصل معنا الآن!";
+      ps.shamcash_code = ps.shamcash_code || "غير محدد بعد";
+      ps.shamcash_name = ps.shamcash_name || "مدير المنصة";
+      ps.monthly_fee_text = ps.monthly_fee_text || "100,000 ل.س / شهرياً";
+      ps.warning_days = ps.warning_days ?? 3;
+      ps.default_grace_days = ps.default_grace_days ?? 3;
+      ps.ads = ps.ads || [];
+      dbData.stores = dbData.stores || {};
+    }
+
+    function ensureStoreStructure() {
+      store.info = store.info || {};
+      store.owner = store.owner || { name: "", phone: "", city: "", notes: "" };
+      store.subscription = store.subscription || { admin_pin: "1122", plan_type: "trial", plan_days: 7, start_date: "", expiry_date: "", grace_days: 3, status: "active", show_ads: true };
+      if (store.subscription.show_ads === undefined) store.subscription.show_ads = true;
+      store.items = store.items || [];
+      store.offers = store.offers || [];
+      store.categories = store.categories || ["عام"];
+      store.customers = store.customers || {};
+      store.orders = store.orders || [];
+      store.promos = store.promos || { loyalty: { enabled: false, every_n_orders: 3, discount_percent: 10 }, coupons: [] };
+      store.promos.loyalty = store.promos.loyalty || { enabled: false, every_n_orders: 3, discount_percent: 10 };
+      store.promos.coupons = store.promos.coupons || [];
+    }
+
     async function init() {
-      if (isAdminRoute) {
-        document.getElementById("adminHeaderBtn").style.display = "inline-block";
-        document.getElementById("adminPanel").style.display = "block";
-      }
+      getDeviceClientId();
       try {
         await fetchFreshDB();
-        if (!store) {
-          document.getElementById("storeName").textContent = "المتجر غير موجود";
-          document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">لم يتم العثور على المتجر: ${storeId}</div>`;
+
+        // وضع السوبر أدمن (خاص بك وحدك)
+        if (isSuperAdminRoute) {
+          document.title = "لوحة تحكم مالك المنصة";
+          document.getElementById("storeName").textContent = dbData.platform_settings.platform_name;
+          document.getElementById("storeTypeTag").textContent = "لوحة تحكم مالك المنصة (Super Admin)";
+          document.getElementById("myOrdersBtn").style.display = "none";
+          document.getElementById("storeContent").style.display = "none";
+          renderSuperAdminLogin();
           return;
         }
+
+        if (!store) {
+          document.getElementById("storeName").textContent = "المتجر غير موجود";
+          document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">لم يتم العثور على المتجر المطلوب (${storeId}).</div>`;
+          renderCreatorFooter();
+          return;
+        }
+
         applyTheme();
-        renderMeta();
-        renderOffers();
-        checkSubscription();
-        checkOpenStatus();
-        loadSavedCustomerLocal();
-        renderMenu();
+        evaluateSubscription();
+        renderCreatorFooter();
+
+        if (isStoreAdminRoute) {
+          renderStoreAdminLogin();
+        }
+
+        if (!isLocked) {
+          renderGlobalAd();
+          renderMeta();
+          renderOffers();
+          checkOpenStatus();
+          loadSavedCustomerLocal();
+          renderMenu();
+        }
       } catch (e) {
         document.getElementById("storeName").textContent = "تعذر التحميل";
         document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">سبب المشكلة: ${e.message}</div>`;
       }
     }
 
-    function ensureStoreStructure() {
-      store.info = store.info || {};
-      store.items = store.items || [];
-      store.offers = store.offers || [];
-      store.categories = store.categories || ["عام"];
-      store.customers = store.customers || {};
-      store.orders = store.orders || [];
-      store.promos = store.promos || {
-        loyalty: { enabled: false, every_n_orders: 3, discount_percent: 10 },
-        coupons: []
-      };
-      store.promos.loyalty = store.promos.loyalty || { enabled: false, every_n_orders: 3, discount_percent: 10 };
-      store.promos.coupons = store.promos.coupons || [];
+    // =========================================================
+    // 3. التحقق من الاشتراك والقفل التلقائي + الدفع عبر شام كاش
+    // =========================================================
+    function evaluateSubscription() {
+      const sub = store.subscription || {};
+      const ps = dbData.platform_settings;
+      const warnDays = Number(ps.warning_days ?? 3);
+      const graceDays = Number(sub.grace_days ?? ps.default_grace_days ?? 3);
+      const banner = document.getElementById("subBanner");
+
+      if (!sub.expiry_date) {
+        lockDetails = { active: true, daysLeft: 999, statusText: "مفعّل" };
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exp = new Date(sub.expiry_date + "T00:00:00");
+      const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < -graceDays || sub.status === "suspended") {
+        isLocked = true;
+        lockDetails = { active: false, diffDays, expiry: sub.expiry_date };
+        document.getElementById("storeContent").style.display = "none";
+        document.getElementById("cartBar").style.display = "none";
+        document.getElementById("myOrdersBtn").style.display = "none";
+
+        const wp = String(ps.creator_whatsapp || "").replace(/\D/g, "");
+        const renewMsg = encodeURIComponent(`مرحباً ${ps.creator_name}، أرغب بتجديد اشتراك متجر "${store.info.name}" (${storeId}). تم تحويل مبلغ الاشتراك عبر شام كاش.`);
+        banner.innerHTML = `
+          <div class="lock-card">
+            <h3 style="margin-top:0;color:#b91c1c;">🔒 تم إيقاف المتجر مؤقتاً لانتهاء مدة الاشتراك</h3>
+            <p style="font-size:0.9rem;">انتهت فترة ${sub.plan_type === "trial" ? "التجربة المجانية" : "الاشتراك"} بتاريخ <strong>${sub.expiry_date}</strong> وانقضت مهلة السماح.</p>
+            <div class="alert alert-info">
+              <strong>لتفعيل البرنامج فوراً، يرجى تحويل قيمة الاشتراك عبر شام كاش:</strong><br/>
+              • قيمة الاشتراك: <strong>${ps.monthly_fee_text}</strong><br/>
+              • حساب / معرّف شام كاش: <strong>${ps.shamcash_code}</strong><br/>
+              • اسم المستفيد: <strong>${ps.shamcash_name}</strong>
+            </div>
+            ${wp ? `<a class="btn btn-ok" style="width:100%;text-align:center;" href="https://wa.me/${wp}?text=${renewMsg}" target="_blank">📲 إرسال إشعار الدفع وتفعيل المتجر عبر واتساب</a>` : ""}
+          </div>
+        `;
+      } else {
+        lockDetails = {
+          active: true,
+          diffDays,
+          expiry: sub.expiry_date,
+          planDays: sub.plan_days || 30,
+          planType: sub.plan_type === "trial" ? "تجربة مجانية" : "اشتراك مفعّل"
+        };
+        if (diffDays <= 0 && isStoreAdminRoute) {
+          banner.innerHTML = `<div class="alert alert-warn">⚠️ انتهى اشتراكك بتاريخ (${sub.expiry_date})! لديك مهلة سماح (${graceDays} أيام) قبل الإغلاق التلقائي.</div>`;
+        } else if (diffDays <= warnDays && isStoreAdminRoute) {
+          banner.innerHTML = `<div class="alert alert-warn">تنبيه: ينتهي اشتراك متجرك خلال ${diffDays} يوم (${sub.expiry_date}).</div>`;
+        }
+      }
     }
 
+    // =========================================================
+    // 4. الإعلانات المركزية وبطاقة منشئ المنصة
+    // =========================================================
+    function renderGlobalAd() {
+      const slot = document.getElementById("adSlot");
+      if (!store.subscription.show_ads) { slot.innerHTML = ""; return; }
+      const activeAds = (dbData.platform_settings.ads || []).filter(a => a.active);
+      if (!activeAds.length) { slot.innerHTML = ""; return; }
+      const ad = activeAds[Math.floor(Math.random() * activeAds.length)];
+      slot.innerHTML = `
+        <div class="ad-banner">
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${ad.image ? `<img src="${ad.image}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;" onerror="this.style.display='none'" />` : ""}
+            <div>
+              <span class="ad-badge">إعلان</span>
+              <div style="font-weight:700;font-size:0.9rem;margin-top:2px;">${ad.title}</div>
+              <div style="font-size:0.8rem;color:var(--muted);">${ad.desc || ""}</div>
+            </div>
+          </div>
+          ${ad.link ? `<a class="btn btn-dark" href="${ad.link}" target="_blank" onclick="trackAdClick('${ad.id}')">فتح</a>` : ""}
+        </div>
+      `;
+    }
+
+    async function trackAdClick(adId) {
+      const ad = (dbData.platform_settings.ads || []).find(a => a.id === adId);
+      if (ad) {
+        ad.clicks = Number(ad.clicks || 0) + 1;
+        await DB_ADAPTER.save(dbData);
+      }
+    }
+
+    function renderCreatorFooter() {
+      const ps = dbData.platform_settings;
+      const wp = String(ps.creator_whatsapp || "").replace(/\D/g, "");
+      const askMsg = encodeURIComponent(`مرحباً ${ps.creator_name}، شاهدت متجراً على منصتكم وأرغب بإنشاء موقع خاص لمتجري.`);
+      document.getElementById("creatorFooterHost").innerHTML = `
+        <div class="creator-footer">
+          <strong>${ps.platform_name} — تصميم وإدارة ${ps.creator_name}</strong>
+          <p>${ps.promo_tagline}</p>
+          <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+            ${wp ? `<a class="btn btn-ok" href="https://wa.me/${wp}?text=${askMsg}" target="_blank">📲 تواصل معنا لإنشاء موقعك</a>` : ""}
+            ${ps.creator_link ? `<a class="btn btn-light" href="${ps.creator_link}" target="_blank">🌐 صفحتنا الرسمية</a>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // 5. واجهة الزبون + خصوصية الطلبات
+    // =========================================================
     function applyTheme() {
       const t = store.info.type || "bakery";
       document.title = store.info.name;
       document.getElementById("storeName").textContent = store.info.name;
-      document.getElementById("storeTypeTag").textContent = TYPE_LABELS[t] || "";
+      document.getElementById("storeTypeTag").textContent = (TEMPLATES[t] && TEMPLATES[t].label) || "";
       document.documentElement.style.setProperty("--primary", store.info.theme_color || "#d97706");
       document.getElementById("currLabel").textContent = store.info.currency || "";
 
-      if (t === "market" || t === "tobacco") document.getElementById("searchInput").style.display = "block";
+      if (t === "market" || t === "tobacco" || t === "retail") document.getElementById("searchInput").style.display = "block";
+      if (t === "retail") document.getElementById("retailOptionField").style.display = "block";
       if (t === "barber") {
         document.getElementById("deliveryFields").style.display = "none";
         document.getElementById("barberFields").style.display = "block";
@@ -311,32 +582,7 @@
       `).join("");
     }
 
-    function checkSubscription() {
-      const sub = store.subscription || {};
-      const warnDays = (dbData.platform_settings && dbData.platform_settings.warning_days) || 3;
-      const graceDays = sub.grace_days ?? ((dbData.platform_settings && dbData.platform_settings.default_grace_days) || 3);
-      if (!sub.expiry_date) return;
-
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const exp = new Date(sub.expiry_date + "T00:00:00");
-      const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-      const banner = document.getElementById("subBanner");
-
-      if (diffDays < -graceDays || sub.status === "suspended") {
-        isSuspended = true;
-        banner.innerHTML = `<div class="alert alert-err">تم إيقاف صفحة المتجر مؤقتاً لانتهاء فترة الاشتراك والسماح.</div>`;
-        document.getElementById("storeContent").style.display = "none";
-        document.getElementById("cartBar").style.display = "none";
-      } else if (diffDays <= 0) {
-        banner.innerHTML = `<div class="alert alert-warn">انتهى تاريخ الاشتراك! لديك مهلة سماح (${graceDays} أيام) قبل الإيقاف التلقائي.</div>`;
-      } else if (diffDays <= warnDays) {
-        banner.innerHTML = `<div class="alert alert-warn">تنبيه: ينتهي اشتراك المتجر خلال ${diffDays} يوم (${sub.expiry_date}).</div>`;
-      }
-    }
-
     function checkOpenStatus() {
-      if (isSuspended) return;
       const cb = document.getElementById("closedBanner");
       cb.innerHTML = store.info.is_open === false
         ? `<div class="alert alert-warn">المتجر مغلق مؤقتاً لاستقبال الطلبات حالياً.</div>`
@@ -346,10 +592,7 @@
     function loadSavedCustomerLocal() {
       const saved = JSON.parse(localStorage.getItem("smart_store_customer_" + storeId) || "null");
       if (!saved) return;
-      if (saved.phone) {
-        document.getElementById("custPhone").value = saved.phone;
-        document.getElementById("trackPhoneInput").value = saved.phone;
-      }
+      if (saved.phone) document.getElementById("custPhone").value = saved.phone;
       if (saved.name) document.getElementById("custName").value = saved.name;
       if (saved.address) document.getElementById("custAddress").value = saved.address;
       if (saved.gps) {
@@ -365,15 +608,6 @@
       loyaltyDiscountPct = 0;
       const loy = store.promos.loyalty || {};
       const cust = store.customers[phone];
-
-      if (cust) {
-        if (!document.getElementById("custName").value.trim() && cust.name) document.getElementById("custName").value = cust.name;
-        if (!document.getElementById("custAddress").value.trim() && cust.address) document.getElementById("custAddress").value = cust.address;
-        if (!document.getElementById("custGPS").value.trim() && cust.gps) {
-          document.getElementById("custGPS").value = cust.gps;
-          document.getElementById("gpsStatus").textContent = "تم استرجاع موقعك المحفوظ ✓";
-        }
-      }
 
       if (!phone || !loy.enabled || !loy.every_n_orders) {
         msgEl.textContent = "";
@@ -428,7 +662,6 @@
     }
 
     function renderMenu() {
-      if (isSuspended) return;
       const cats = ["الكل", ...store.categories];
       document.getElementById("catsBar").innerHTML = cats.map(c =>
         `<button class="cat-btn ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`
@@ -503,7 +736,6 @@
     }
 
     function updateTotals() {
-      if (isSuspended) return;
       const t = calculateTotals();
       const bar = document.getElementById("cartBar");
       const checkout = document.getElementById("checkoutBox");
@@ -530,6 +762,7 @@
       const isBarber = (store.info.type || "bakery") === "barber";
       const bookDate = document.getElementById("bookDate").value;
       const bookTime = document.getElementById("bookTime").value;
+      const variantNote = (document.getElementById("itemVariantNote").value || "").trim();
 
       if (!phone || !name) { alert("يرجى إدخال رقم الهاتف والاسم."); return; }
       if (!isBarber && !address && !gps) { alert("يرجى إدخال العنوان أو مشاركة الموقع GPS."); return; }
@@ -544,18 +777,18 @@
         await fetchFreshDB();
         const t = calculateTotals();
         const orderId = "ORD" + String(Date.now()).slice(-5);
-        const summaryText = t.lines.map(l => `${l.name} × ${l.qty}`).join(" ، ");
+        let summaryText = t.lines.map(l => `${l.name} × ${l.qty}`).join(" ، ");
+        if (variantNote) summaryText += ` (${variantNote})`;
 
+        const deviceCid = getDeviceClientId();
         store.orders.unshift({
           id: orderId,
+          client_id: deviceCid,
           customer_phone: phone,
           customer_name: name,
           address: isBarber ? `موعد: ${bookDate} ${bookTime}` : address,
           gps,
           summary: summaryText,
-          subtotal: t.subtotal,
-          discount: t.discount,
-          delivery_fee: t.deliveryFee,
           total: t.finalTotal,
           pay_method: payMethod,
           sham_ref: shamRef,
@@ -565,11 +798,10 @@
 
         upsertCustomer(phone, name, 0, 0, address, gps);
         localStorage.setItem("smart_store_customer_" + storeId, JSON.stringify({ phone, name, address, gps }));
-        document.getElementById("trackPhoneInput").value = phone;
 
-        const ok = await saveAllDirect(true);
+        const ok = await DB_ADAPTER.save(dbData);
         if (!ok) {
-          alert("تعذر إرسال الطلب إلى الموقع حالياً. يرجى المحاولة بعد قليل.");
+          alert("تعذر إرسال الطلب حالياً. تأكد من مفتاح المزامنة.");
           return;
         }
 
@@ -578,8 +810,8 @@
         renderMenu();
         document.getElementById("orderSuccessBanner").innerHTML = `
           <div class="alert alert-ok">
-            ✅ تم إرسال طلبك بنجاح إلى إدارة المحل برقم <strong>#${orderId}</strong>.<br/>
-            يمكنك متابعة حالة الموافقة والفاتورة وموعد التسليم من زر <strong>"طلباتي"</strong> في الأعلى.
+            ✅ تم إرسال طلبك بنجاح برقم <strong>#${orderId}</strong>.<br/>
+            يمكنك متابعة حالة تنفيذ الطلب والفاتورة من زر <strong>"طلباتي"</strong> في الأعلى (مرتبط بجهازك بأمان).
           </div>
         `;
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -596,23 +828,28 @@
     }
 
     async function renderCustomerOrders() {
-      const phone = document.getElementById("trackPhoneInput").value.trim();
       const listEl = document.getElementById("customerOrdersList");
-      if (!phone) { listEl.innerHTML = `<small style="color:var(--muted)">أدخل رقم هاتفك أولاً.</small>`; return; }
       listEl.innerHTML = `<small>جاري التحديث...</small>`;
       await fetchFreshDB();
+      const deviceCid = getDeviceClientId();
       const curr = store.info.currency || "";
-      const myOrders = (store.orders || []).filter(o => String(o.customer_phone || "").trim() === phone);
+      // لا يعرض إلا الطلبات المنشأة من هذا الجهاز فقط لمنع التجسس
+      const myOrders = (store.orders || []).filter(o => o.client_id === deviceCid);
+
       if (myOrders.length === 0) {
-        listEl.innerHTML = `<p style="color:var(--muted)">لا توجد طلبات مسجلة لهذا الرقم.</p>`;
+        listEl.innerHTML = `<p style="color:var(--muted);font-size:0.88rem;">لا توجد طلبات مسجلة من هذا الجهاز حتى الآن.</p>`;
         return;
       }
-      listEl.innerHTML = myOrders.map(o => {
+
+      const activeList = myOrders.filter(o => o.status === "pending");
+      const archivedList = myOrders.filter(o => o.status !== "pending");
+
+      const renderCard = (o) => {
         const st = o.status === "completed"
-          ? `<span class="st-completed">تمت الموافقة (فاتورة معتمدة)</span>`
+          ? `<span class="st-completed">منفذ (فاتورة معتمدة)</span>`
           : o.status === "rejected"
           ? `<span class="st-rejected">مرفوض</span>`
-          : `<span class="st-pending">قيد المراجعة</span>`;
+          : `<span class="st-pending">قيد التنفيذ والمراجعة</span>`;
         return `
           <div class="order-card">
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -625,45 +862,64 @@
             ${o.reject_reason ? `<div class="alert alert-err" style="margin-top:8px;margin-bottom:0;">نعتذر، سبب الرفض: ${o.reject_reason}</div>` : ""}
           </div>
         `;
-      }).join("");
+      };
+
+      listEl.innerHTML = `
+        <h4 class="sec-title">⏳ طلبات قيد التنفيذ (${activeList.length})</h4>
+        ${activeList.length === 0 ? `<p style="color:var(--muted);font-size:0.85rem;">لا توجد طلبات قيد الانتظار حالياً.</p>` : activeList.map(renderCard).join("")}
+        <h4 class="sec-title">✅ سجل الطلبات المنفذة والسابقة (${archivedList.length})</h4>
+        ${archivedList.length === 0 ? `<p style="color:var(--muted);font-size:0.85rem;">لا توجد طلبات منفذة سابقة بعد.</p>` : archivedList.map(renderCard).join("")}
+      `;
     }
 
-    function toggleAdmin() {
-      const panel = document.getElementById("adminPanel");
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    // =========================================================
+    // 6. لوحة إدارة صاحب المحل (تُبنى ديناميكياً عند &admin=1 فقط)
+    // =========================================================
+    function renderStoreAdminLogin() {
+      document.getElementById("dynamicAdminHost").innerHTML = `
+        <div class="panel">
+          <h3 style="margin-top:0;">دخول إدارة المحل</h3>
+          <label>رمز PIN الخاص بالمحل:</label>
+          <input type="password" id="storePinInput" placeholder="أدخل رمز PIN" />
+          <button class="btn btn-primary" style="width:100%;" onclick="unlockStoreAdmin()">دخول</button>
+        </div>
+      `;
     }
 
-    function unlockAdmin() {
-      const pin = document.getElementById("pinInput").value.trim();
-      if (pin !== String((store.subscription && store.subscription.admin_pin) || "")) {
+    function unlockStoreAdmin() {
+      if (!checkRateLimit("store_" + storeId)) return;
+      const pin = document.getElementById("storePinInput").value.trim();
+      const valid = pin && pin === String((store.subscription && store.subscription.admin_pin) || "");
+      recordAuthResult("store_" + storeId, valid);
+      if (!valid) {
         alert("رمز PIN غير صحيح");
         return;
       }
-      document.getElementById("adminLogin").style.display = "none";
-      renderAdminWorkspace();
+      renderStoreAdminWorkspace();
     }
 
     function setAdminTab(tab) {
       activeAdminTab = tab;
-      renderAdminWorkspace();
+      renderStoreAdminWorkspace();
     }
 
-    async function refreshAdminOrders() {
-      await fetchFreshDB();
-      renderOrdersTab();
-    }
+    function renderStoreAdminWorkspace() {
+      const ld = lockDetails || {};
+      const subStatusHtml = ld.active
+        ? `<div class="alert alert-info">📋 حالة الاشتراك: <strong>${ld.planType} (${ld.planDays} يوم)</strong> — ينتهي بتاريخ: <strong>${ld.expiry || "مفتوح"}</strong> (متبقي ${ld.diffDays} يوم)</div>`
+        : "";
 
-    function renderAdminWorkspace() {
-      const ws = document.getElementById("adminWorkspace");
-      ws.style.display = "block";
-      ws.innerHTML = `
-        <div class="admin-tabs">
-          <button class="tab-btn ${activeAdminTab==='orders'?'active':''}" onclick="setAdminTab('orders')">الطلبات والإحصائيات</button>
-          <button class="tab-btn ${activeAdminTab==='items'?'active':''}" onclick="setAdminTab('items')">الأصناف والعروض</button>
-          <button class="tab-btn ${activeAdminTab==='settings'?'active':''}" onclick="setAdminTab('settings')">الإعدادات والخصومات</button>
-          <button class="tab-btn ${activeAdminTab==='customers'?'active':''}" onclick="setAdminTab('customers')">سجل الزبائن</button>
+      document.getElementById("dynamicAdminHost").innerHTML = `
+        <div class="panel">
+          ${subStatusHtml}
+          <div class="admin-tabs">
+            <button class="tab-btn ${activeAdminTab==='orders'?'active':''}" onclick="setAdminTab('orders')">الطلبات والإحصائيات</button>
+            <button class="tab-btn ${activeAdminTab==='items'?'active':''}" onclick="setAdminTab('items')">الأصناف والعروض</button>
+            <button class="tab-btn ${activeAdminTab==='settings'?'active':''}" onclick="setAdminTab('settings')">الإعدادات والخصومات</button>
+            <button class="tab-btn ${activeAdminTab==='customers'?'active':''}" onclick="setAdminTab('customers')">سجل الزبائن</button>
+          </div>
+          <div id="adminTabBody"></div>
         </div>
-        <div id="adminTabBody"></div>
       `;
       if (activeAdminTab === "orders") renderOrdersTab();
       else if (activeAdminTab === "items") renderItemsTab();
@@ -681,9 +937,12 @@
       const list = orders.filter(o => ordersFilter === "all" || o.status === ordersFilter);
 
       document.getElementById("adminTabBody").innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <strong>ملخص الطلبات</strong>
-          <button class="btn btn-sec" onclick="refreshAdminOrders()">🔄 تحديث الطلبات الواردة</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+          <strong>إدارة الطلبات</strong>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sec" onclick="fetchFreshDB().then(renderOrdersTab)">🔄 تحديث</button>
+            <button class="btn btn-danger" onclick="resetStoreOrders()">🗑️ تصفير الطلبات</button>
+          </div>
         </div>
         <div class="stats-grid">
           <div class="stat-card"><div>معلقة</div><div class="stat-val">${pending.length}</div></div>
@@ -693,10 +952,10 @@
         </div>
 
         <div class="cats">
-          <button class="cat-btn ${ordersFilter==='all'?'active':''}" onclick="ordersFilter='all';renderOrdersTab()">الكل (${orders.length})</button>
           <button class="cat-btn ${ordersFilter==='pending'?'active':''}" onclick="ordersFilter='pending';renderOrdersTab()">معلقة (${pending.length})</button>
           <button class="cat-btn ${ordersFilter==='completed'?'active':''}" onclick="ordersFilter='completed';renderOrdersTab()">منفذة (${completed.length})</button>
           <button class="cat-btn ${ordersFilter==='rejected'?'active':''}" onclick="ordersFilter='rejected';renderOrdersTab()">مرفوضة (${rejected.length})</button>
+          <button class="cat-btn ${ordersFilter==='all'?'active':''}" onclick="ordersFilter='all';renderOrdersTab()">الكل (${orders.length})</button>
         </div>
 
         ${list.length === 0 ? `<p style="color:var(--muted)">لا توجد طلبات في هذا القسم.</p>` : list.map(o => {
@@ -722,11 +981,11 @@
               ${o.reject_reason ? `<div style="font-size:0.84rem;color:#b91c1c;margin-top:4px;">سبب الرفض: ${o.reject_reason}</div>` : ""}
               ${o.status === "pending" ? `
                 <div style="margin-top:8px;">
-                  <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة)" value="${o.delivery_eta || ""}" />
-                  <input type="text" id="rej_${o.id}" placeholder="سبب الرفض (في حال رفض الطلب)" value="${o.reject_reason || ""}" />
+                  <input type="text" id="eta_${o.id}" placeholder="موعد التسليم (مثال: خلال 25 دقيقة)" />
+                  <input type="text" id="rej_${o.id}" placeholder="سبب الرفض (في حال رفض الطلب)" />
                   <div class="row-actions">
-                    <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ موافقة وإصدار فاتورة</button>
-                    <button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ رفض مع اعتذار</button>
+                    <button class="btn btn-ok" onclick="approveOrder('${o.id}')">✓ تنفيذ وترحيل الطلب</button>
+                    <button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ رفض الطلب</button>
                   </div>
                 </div>
               ` : ""}
@@ -736,16 +995,24 @@
       `;
     }
 
+    async function resetStoreOrders() {
+      if (!confirm("هل أنت متأكد من تصفير جميع الطلبات والإحصائيات لهذا المحل؟")) return;
+      store.orders = [];
+      await saveWithAlert(true);
+      renderOrdersTab();
+    }
+
+    async function resetStoreCustomers() {
+      if (!confirm("هل أنت متأكد من تصفير سجل الزبائن بالكامل؟")) return;
+      store.customers = {};
+      await saveWithAlert(true);
+      renderCustomersTab();
+    }
+
     function upsertCustomer(phone, name, addCompletedCount, addSpent, address, gps) {
       if (!phone) return;
       store.customers[phone] = store.customers[phone] || {
-        name: name || "",
-        phone,
-        address: address || "",
-        gps: gps || "",
-        completed_orders: 0,
-        total_spent: 0,
-        last_order_at: ""
+        name: name || "", phone, address: address || "", gps: gps || "", completed_orders: 0, total_spent: 0, last_order_at: ""
       };
       if (name) store.customers[phone].name = name;
       if (address) store.customers[phone].address = address;
@@ -758,21 +1025,19 @@
     async function approveOrder(orderId) {
       const ord = store.orders.find(x => x.id === orderId);
       if (!ord) return;
-      const eta = document.getElementById(`eta_${orderId}`).value.trim() || "في أقرب وقت";
-      ord.delivery_eta = eta;
+      ord.delivery_eta = document.getElementById(`eta_${orderId}`).value.trim() || "في أقرب وقت";
       ord.status = "completed";
       upsertCustomer(ord.customer_phone, ord.customer_name, 1, ord.total, ord.address, ord.gps);
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderOrdersTab();
     }
 
     async function rejectOrder(orderId) {
       const ord = store.orders.find(x => x.id === orderId);
       if (!ord) return;
-      const reason = document.getElementById(`rej_${orderId}`).value.trim() || "تعذر تنفيذ الطلب حالياً";
-      ord.reject_reason = reason;
+      ord.reject_reason = document.getElementById(`rej_${orderId}`).value.trim() || "تعذر تنفيذ الطلب حالياً";
       ord.status = "rejected";
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderOrdersTab();
     }
 
@@ -812,7 +1077,7 @@
           <input type="text" id="img_${idx}" value="${it.image || ""}" placeholder="رابط الصورة" />
         </div>
       `).join("");
-      html += `<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncItemsAndSave()">حفظ التعديلات تلقائياً</button>`;
+      html += `<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncItemsAndSave()">حفظ التعديلات</button>`;
       document.getElementById("adminTabBody").innerHTML = html;
     }
 
@@ -822,13 +1087,13 @@
       const price = Number(document.getElementById("new_offer_price").value || 0);
       if (!title) { alert("أدخل عنوان العرض."); return; }
       store.offers.push({ id: "o_" + Date.now(), title, desc, price });
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderItemsTab();
     }
 
     async function deleteOffer(i) {
       store.offers.splice(i, 1);
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderItemsTab();
     }
 
@@ -840,13 +1105,13 @@
       const category = document.getElementById("new_cat").value;
       if (!name || !price) { alert("أدخل اسم الصنف والسعر."); return; }
       store.items.push({ id: "i_" + Date.now(), category, name, desc, price, image, available: true });
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderItemsTab();
     }
 
     async function deleteItem(idx) {
       store.items.splice(idx, 1);
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderItemsTab();
     }
 
@@ -859,7 +1124,7 @@
         if (a) it.available = a.checked;
         if (im) it.image = im.value.trim();
       });
-      await saveAllDirect(false);
+      await saveWithAlert(false);
     }
 
     function renderSettingsTab() {
@@ -914,7 +1179,7 @@
           </div>
         `).join("")}
 
-        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncSettingsAndSave()">حفظ الإعدادات تلقائياً</button>
+        <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="syncSettingsAndSave()">حفظ الإعدادات</button>
       `;
     }
 
@@ -924,13 +1189,13 @@
       const value = Number(document.getElementById("new_cp_val").value || 0);
       if (!code || !value) { alert("أدخل الكود وقيمة الخصم."); return; }
       store.promos.coupons.push({ code, type, value, active: true });
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderSettingsTab();
     }
 
     async function deleteCoupon(i) {
       store.promos.coupons.splice(i, 1);
-      await saveAllDirect(true);
+      await saveWithAlert(true);
       renderSettingsTab();
     }
 
@@ -944,22 +1209,25 @@
       store.info.delivery_fee = Number(document.getElementById("set_fee").value || 0);
       store.info.shamcash = {
         account_code: document.getElementById("set_sc_code").value.trim(),
-        account_name: document.getElementById("set_sc_name").value.trim(),
-        notes: (store.info.shamcash && store.info.shamcash.notes) || ""
+        account_name: document.getElementById("set_sc_name").value.trim()
       };
       store.promos.loyalty = {
         enabled: document.getElementById("set_loy_en").checked,
         every_n_orders: Number(document.getElementById("set_loy_n").value || 3),
         discount_percent: Number(document.getElementById("set_loy_pct").value || 10)
       };
-      await saveAllDirect(false);
+      await saveWithAlert(false);
     }
 
     function renderCustomersTab() {
       const custList = Object.values(store.customers || {});
       const curr = store.info.currency || "";
       document.getElementById("adminTabBody").innerHTML = `
-        <h4 class="sec-title">سجل الزبائن (${custList.length})</h4>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h4 class="sec-title" style="margin:0;border:none;">سجل الزبائن (${custList.length})</h4>
+          <button class="btn btn-danger" onclick="resetStoreCustomers()">🗑️ تصفير سجل الزبائن</button>
+        </div>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0 12px;" />
         ${custList.length === 0 ? `<p style="color:var(--muted)">لا يوجد زبائن مسجلون بعد.</p>` : custList.map(c => `
           <div class="order-card">
             <strong>${c.name || "زبون"}</strong> — <span>${c.phone}</span><br/>
@@ -973,26 +1241,409 @@
       `;
     }
 
-    async function saveAllDirect(silent) {
-      const syncKey = getSyncToken();
-      if (!syncKey) {
-        alert("مفتاح المزامنة غير مضبوط.");
-        return false;
+    // =========================================================
+    // 7. لوحة تحكم مالك المنصة (Super Admin) — خاصة بك وحدك
+    // =========================================================
+    function renderSuperAdminLogin() {
+      document.getElementById("dynamicAdminHost").innerHTML = `
+        <div class="panel">
+          <h3 style="margin-top:0;">🔐 دخول مالك المنصة (Super Admin)</h3>
+          <label>رمز الدخول الرئيسي الخاص بك:</label>
+          <input type="password" id="superPinInput" placeholder="أدخل رمز السوبر أدمن" />
+          <button class="btn btn-primary" style="width:100%;" onclick="unlockSuperAdmin()">دخول إلى لوحة المنصة</button>
+        </div>
+      `;
+    }
+
+    function unlockSuperAdmin() {
+      if (!checkRateLimit("super_admin")) return;
+      const pin = document.getElementById("superPinInput").value.trim();
+      const valid = pin === DB_CONFIG.superAdminPin;
+      recordAuthResult("super_admin", valid);
+      if (!valid) {
+        alert("رمز الدخول غير صحيح.");
+        return;
       }
-      const res = await fetch(API_URL, {
-        method: "PATCH",
-        headers: { "Authorization": `Bearer ${syncKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
-      });
-      if (res.ok) {
-        if (!silent) {
-          alert("تم حفظ التعديلات ونشرها تلقائياً!");
-          location.reload();
-        }
+      renderSuperAdminWorkspace();
+    }
+
+    function setSuperTab(t) {
+      activeSuperTab = t;
+      renderSuperAdminWorkspace();
+    }
+
+    function renderSuperAdminWorkspace() {
+      document.getElementById("dynamicAdminHost").innerHTML = `
+        <div class="panel">
+          <div class="admin-tabs">
+            <button class="tab-btn ${activeSuperTab==='stores'?'active':''}" onclick="setSuperTab('stores')">المتاجر والاشتراكات</button>
+            <button class="tab-btn ${activeSuperTab==='new_store'?'active':''}" onclick="setSuperTab('new_store')">+ إنشاء متجر جديد</button>
+            <button class="tab-btn ${activeSuperTab==='ads'?'active':''}" onclick="setSuperTab('ads')">الإعلانات المركزية</button>
+            <button class="tab-btn ${activeSuperTab==='platform'?'active':''}" onclick="setSuperTab('platform')">إعداداتي والدفع</button>
+            <button class="tab-btn ${activeSuperTab==='maintenance'?'active':''}" onclick="setSuperTab('maintenance')">الصيانة والتصفير</button>
+          </div>
+          <div id="superTabBody"></div>
+        </div>
+      `;
+      if (activeSuperTab === "stores") renderSuperStoresTab();
+      else if (activeSuperTab === "new_store") renderSuperNewStoreTab();
+      else if (activeSuperTab === "ads") renderSuperAdsTab();
+      else if (activeSuperTab === "platform") renderSuperPlatformTab();
+      else if (activeSuperTab === "maintenance") renderSuperMaintenanceTab();
+    }
+
+    function getStoreSubDaysLeft(st) {
+      const expStr = st.subscription && st.subscription.expiry_date;
+      if (!expStr) return 999;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const exp = new Date(expStr + "T00:00:00");
+      return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+    }
+
+    function renderSuperStoresTab() {
+      const entries = Object.entries(dbData.stores || {});
+      const expiringSoon = entries.filter(([, s]) => { const d = getStoreSubDaysLeft(s); return d >= 0 && d <= 3; });
+      const expired = entries.filter(([, s]) => getStoreSubDaysLeft(s) < 0 || (s.subscription && s.subscription.status === "suspended"));
+
+      const filtered = entries.filter(([, s]) => {
+        const d = getStoreSubDaysLeft(s);
+        if (superFilter === "expiring") return d >= 0 && d <= 3;
+        if (superFilter === "expired") return d < 0 || (s.subscription && s.subscription.status === "suspended");
         return true;
+      });
+
+      const baseUrl = location.origin + location.pathname;
+      const ps = dbData.platform_settings;
+
+      document.getElementById("superTabBody").innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div>إجمالي المتاجر</div><div class="stat-val">${entries.length}</div></div>
+          <div class="stat-card"><div>تنتهي قريباً (≤3 أيام)</div><div class="stat-val">${expiringSoon.length}</div></div>
+          <div class="stat-card"><div>منتهية / موقوفة</div><div class="stat-val">${expired.length}</div></div>
+          <div class="stat-card"><div>الإعلانات النشطة</div><div class="stat-val">${(ps.ads || []).filter(a => a.active).length}</div></div>
+        </div>
+
+        <div class="cats">
+          <button class="cat-btn ${superFilter==='all'?'active':''}" onclick="superFilter='all';renderSuperStoresTab()">الكل (${entries.length})</button>
+          <button class="cat-btn ${superFilter==='expiring'?'active':''}" onclick="superFilter='expiring';renderSuperStoresTab()">تنتهي قريباً (${expiringSoon.length})</button>
+          <button class="cat-btn ${superFilter==='expired'?'active':''}" onclick="superFilter='expired';renderSuperStoresTab()">منتهية (${expired.length})</button>
+        </div>
+
+        ${filtered.map(([id, st]) => {
+          const sub = st.subscription || {};
+          const ow = st.owner || {};
+          const dLeft = getStoreSubDaysLeft(st);
+          const badge = dLeft < 0 || sub.status === "suspended"
+            ? `<span class="st-rejected">منتهي / مقفل</span>`
+            : dLeft <= 3
+            ? `<span class="st-pending">ينتهي خلال ${dLeft} يوم</span>`
+            : `<span class="st-completed">نشط (${dLeft} يوم)</span>`;
+
+          const custLink = `${baseUrl}?store=${id}`;
+          const admLink = `${baseUrl}?store=${id}&admin=1`;
+          const owWp = String(ow.phone || "").replace(/\D/g, "");
+          const remindText = encodeURIComponent(`مرحباً ${ow.name || "مدير المتجر"}، نذكّرك بأن اشتراك متجر "${st.info.name}" ينتهي بتاريخ ${sub.expiry_date}. للتجديد يرجى التحويل عبر شام كاش (${ps.shamcash_code}) بقيمة ${ps.monthly_fee_text}.`);
+
+          return `
+            <div class="order-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>${st.info.name} (${id})</strong>
+                ${badge}
+              </div>
+              <div style="font-size:0.84rem;color:var(--muted);margin-top:4px;">
+                المدير: <strong>${ow.name || "-"}</strong> | هاتف: <strong>${ow.phone || "-"}</strong> | المدينة: ${ow.city || "-"}<br/>
+                PIN الإدارة: <strong>${sub.admin_pin}</strong> | النوع: ${sub.plan_type === "trial" ? "تجربة مجانية" : "مدفوع"} (${sub.plan_days || 0} يوم) | ينتهي: <strong>${sub.expiry_date || "-"}</strong>
+              </div>
+              ${ow.notes ? `<div style="font-size:0.82rem;color:#075985;margin-top:4px;">ملاحظات: ${ow.notes}</div>` : ""}
+
+              <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+                <input type="number" id="days_${id}" placeholder="أيام (7 أو 30)" style="width:120px;margin:0;" />
+                <select id="ptype_${id}" style="width:135px;margin:0;">
+                  <option value="paid">تفعيل اشتراك</option>
+                  <option value="trial">تجربة مجانية</option>
+                </select>
+                <button class="btn btn-ok" onclick="grantSubscription('${id}')">تفعيل المدة</button>
+                <button class="btn btn-danger" onclick="toggleSuspendStore('${id}')">${sub.status === "suspended" ? "رفع الإيقاف" : "قفل فوري"}</button>
+              </div>
+
+              <div class="row-actions">
+                <button class="btn btn-sec" onclick="copyText('${custLink}')">📋 رابط الزبون</button>
+                <button class="btn btn-sec" onclick="copyText('${admLink}')">🔑 رابط المدير</button>
+                <button class="btn btn-sec" onclick="toggleStoreAds('${id}')">${sub.show_ads ? "🚫 إيقاف الإعلانات" : "📢 تفعيل الإعلانات"}</button>
+                ${owWp ? `<a class="btn btn-ok" href="https://wa.me/${owWp}?text=${remindText}" target="_blank">📲 تذكير واتساب</a>` : ""}
+                <button class="btn btn-danger" onclick="resetSingleStoreData('${id}')">🧹 تصفير بيانات المحل</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function copyText(txt) {
+      navigator.clipboard.writeText(txt).then(() => alert("تم نسخ الرابط:\n" + txt));
+    }
+
+    async function grantSubscription(id) {
+      const st = dbData.stores[id];
+      const days = Number(document.getElementById(`days_${id}`).value || 30);
+      const ptype = document.getElementById(`ptype_${id}`).value;
+      const today = new Date();
+      const exp = new Date();
+      exp.setDate(today.getDate() + days);
+
+      st.subscription.start_date = today.toISOString().slice(0, 10);
+      st.subscription.expiry_date = exp.toISOString().slice(0, 10);
+      st.subscription.plan_days = days;
+      st.subscription.plan_type = ptype;
+      st.subscription.status = "active";
+
+      await saveWithAlert(true);
+      renderSuperStoresTab();
+    }
+
+    async function toggleSuspendStore(id) {
+      const st = dbData.stores[id];
+      st.subscription.status = st.subscription.status === "suspended" ? "active" : "suspended";
+      await saveWithAlert(true);
+      renderSuperStoresTab();
+    }
+
+    async function toggleStoreAds(id) {
+      const st = dbData.stores[id];
+      st.subscription.show_ads = !st.subscription.show_ads;
+      await saveWithAlert(true);
+      renderSuperStoresTab();
+    }
+
+    async function resetSingleStoreData(id) {
+      if (!confirm(`هل أنت متأكد من تصفير جميع الطلبات وسجل الزبائن للمتجر (${id})؟`)) return;
+      dbData.stores[id].orders = [];
+      dbData.stores[id].customers = {};
+      await saveWithAlert(true);
+      renderSuperStoresTab();
+    }
+
+    function renderSuperNewStoreTab() {
+      document.getElementById("superTabBody").innerHTML = `
+        <h4 class="sec-title">إنشاء متجر جديد في المنصة</h4>
+        <label>معرّف المتجر بالإنجليزية (بدون مسافات، مثال: market2):</label>
+        <input type="text" id="ns_id" placeholder="مثال: market2" />
+        <label>اسم المتجر:</label>
+        <input type="text" id="ns_name" placeholder="مثال: سوبر ماركت البركة" />
+        <label>نوع النشاط (قالب جاهز):</label>
+        <select id="ns_type">
+          ${Object.entries(TEMPLATES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("")}
+        </select>
+        <label>العملة:</label>
+        <input type="text" id="ns_curr" value="ل.س" />
+        <label>رمز PIN لصاحب المحل (يفضّل 6 أرقام):</label>
+        <input type="text" id="ns_pin" value="${Math.floor(100000 + Math.random() * 900000)}" />
+
+        <h4 class="sec-title">بيانات صاحب المحل (للتواصل والمتابعة)</h4>
+        <input type="text" id="ns_ow_name" placeholder="اسم صاحب المحل" />
+        <input type="text" id="ns_ow_phone" placeholder="رقم هاتف / واتساب صاحب المحل (مثال: 9639xxxxxxxx)" />
+        <input type="text" id="ns_ow_city" placeholder="المدينة / المنطقة" />
+        <input type="text" id="ns_ow_notes" placeholder="ملاحظاتك الخاصة" />
+
+        <h4 class="sec-title">فترة التجربة أو الاشتراك الأولية</h4>
+        <select id="ns_plan_type">
+          <option value="trial">تجربة مجانية</option>
+          <option value="paid">اشتراك مدفوع</option>
+        </select>
+        <input type="number" id="ns_days" value="7" placeholder="عدد الأيام (مثال: 7 أو 30)" />
+        <label><input type="checkbox" id="ns_ads" checked style="width:auto;" /> عرض إعلانات المنصة داخل هذا المتجر</label>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="createNewStore()">إنشاء المتجر وتفعيله الآن</button>
+      `;
+    }
+
+    async function createNewStore() {
+      const id = document.getElementById("ns_id").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      const name = document.getElementById("ns_name").value.trim();
+      const type = document.getElementById("ns_type").value;
+      const currency = document.getElementById("ns_curr").value.trim() || "ل.س";
+      const pin = document.getElementById("ns_pin").value.trim() || "482910";
+      const days = Number(document.getElementById("ns_days").value || 7);
+      const planType = document.getElementById("ns_plan_type").value;
+
+      if (!id || !name) { alert("أدخل معرّف المتجر واسمه."); return; }
+      if (dbData.stores[id]) { alert("هذا المعرّف مستخدم مسبقاً، اختر معرّفاً آخر."); return; }
+
+      const tpl = TEMPLATES[type] || TEMPLATES.custom;
+      const today = new Date();
+      const exp = new Date();
+      exp.setDate(today.getDate() + days);
+
+      dbData.stores[id] = {
+        info: {
+          name, type, theme_color: "#d97706", currency, is_open: true,
+          phone_whatsapp: document.getElementById("ns_ow_phone").value.trim(),
+          location_text: document.getElementById("ns_ow_city").value.trim(),
+          delivery_type: "fixed", delivery_fee: 5000,
+          shamcash: { account_code: "", account_name: "" }
+        },
+        owner: {
+          name: document.getElementById("ns_ow_name").value.trim(),
+          phone: document.getElementById("ns_ow_phone").value.trim(),
+          city: document.getElementById("ns_ow_city").value.trim(),
+          notes: document.getElementById("ns_ow_notes").value.trim()
+        },
+        subscription: {
+          admin_pin: pin,
+          plan_type: planType,
+          plan_days: days,
+          start_date: today.toISOString().slice(0, 10),
+          expiry_date: exp.toISOString().slice(0, 10),
+          grace_days: 3,
+          status: "active",
+          show_ads: document.getElementById("ns_ads").checked
+        },
+        categories: [...tpl.categories],
+        items: JSON.parse(JSON.stringify(tpl.sampleItems)),
+        offers: [],
+        promos: { loyalty: { enabled: false, every_n_orders: 3, discount_percent: 10 }, coupons: [] },
+        customers: {},
+        orders: []
+      };
+
+      await saveWithAlert(true);
+      activeSuperTab = "stores";
+      renderSuperAdminWorkspace();
+    }
+
+    function renderSuperAdsTab() {
+      const ads = dbData.platform_settings.ads || [];
+      document.getElementById("superTabBody").innerHTML = `
+        <h4 class="sec-title">إضافة إعلان مركزي جديد (يظهر في كل المتاجر)</h4>
+        <input type="text" id="ad_title" placeholder="عنوان الإعلان" />
+        <input type="text" id="ad_desc" placeholder="نص الإعلان القصير" />
+        <input type="text" id="ad_img" placeholder="رابط صورة الإعلان (اختياري)" />
+        <input type="text" id="ad_link" placeholder="رابط عند الضغط (واتساب أو موقع المعلن)" />
+        <button class="btn btn-dark" onclick="addGlobalAd()">+ نشر الإعلان في كل المتاجر</button>
+
+        <h4 class="sec-title">الإعلانات الحالية</h4>
+        ${ads.length === 0 ? `<p style="color:var(--muted)">لا توجد إعلانات مضافة بعد.</p>` : ads.map((a, i) => `
+          <div class="order-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong>${a.title}</strong>
+              <span>النقرات: <strong>${a.clicks || 0}</strong></span>
+            </div>
+            <div style="font-size:0.84rem;color:var(--muted);margin:4px 0;">${a.desc || ""}</div>
+            <div class="row-actions">
+              <button class="btn btn-sec" onclick="toggleGlobalAd(${i})">${a.active ? "إيقاف مؤقت" : "تفعيل"}</button>
+              <button class="btn btn-danger" onclick="deleteGlobalAd(${i})">حذف</button>
+            </div>
+          </div>
+        `).join("")}
+      `;
+    }
+
+    async function addGlobalAd() {
+      const title = document.getElementById("ad_title").value.trim();
+      const desc = document.getElementById("ad_desc").value.trim();
+      const image = document.getElementById("ad_img").value.trim();
+      const link = document.getElementById("ad_link").value.trim();
+      if (!title) { alert("أدخل عنوان الإعلان."); return; }
+      dbData.platform_settings.ads.push({ id: "ad_" + Date.now(), title, desc, image, link, active: true, clicks: 0 });
+      await saveWithAlert(true);
+      renderSuperAdsTab();
+    }
+
+    async function toggleGlobalAd(i) {
+      dbData.platform_settings.ads[i].active = !dbData.platform_settings.ads[i].active;
+      await saveWithAlert(true);
+      renderSuperAdsTab();
+    }
+
+    async function deleteGlobalAd(i) {
+      dbData.platform_settings.ads.splice(i, 1);
+      await saveWithAlert(true);
+      renderSuperAdsTab();
+    }
+
+    function renderSuperPlatformTab() {
+      const ps = dbData.platform_settings;
+      document.getElementById("superTabBody").innerHTML = `
+        <h4 class="sec-title">معلوماتك كمنشئ للمنصة (تتحدث تلقائياً في جميع المواقع)</h4>
+        <label>اسم المنصة:</label>
+        <input type="text" id="ps_pname" value="${ps.platform_name || ""}" />
+        <label>اسمك / اسم المطور:</label>
+        <input type="text" id="ps_cname" value="${ps.creator_name || ""}" />
+        <label>رقم واتسابك (بصيغة دولية مثل 9639xxxxxxxx):</label>
+        <input type="text" id="ps_cwp" value="${ps.creator_whatsapp || ""}" />
+        <label>رابط صفحتك أو موقعك (اختياري):</label>
+        <input type="text" id="ps_clink" value="${ps.creator_link || ""}" />
+        <label>العبارة التسويقية في أسفل كل متجر:</label>
+        <input type="text" id="ps_tag" value="${ps.promo_tagline || ""}" />
+
+        <h4 class="sec-title">بيانات الدفع والاشتراك الخاصة بك (شام كاش)</h4>
+        <label>حساب / معرّف شام كاش الخاص بك:</label>
+        <input type="text" id="ps_sc_code" value="${ps.shamcash_code || ""}" />
+        <label>اسم المستفيد في شام كاش:</label>
+        <input type="text" id="ps_sc_name" value="${ps.shamcash_name || ""}" />
+        <label>قيمة الاشتراك الشهري المعروضة للمدراء:</label>
+        <input type="text" id="ps_fee" value="${ps.monthly_fee_text || ""}" />
+        <label>مهلة السماح بعد انتهاء الاشتراك (بالأيام):</label>
+        <input type="number" id="ps_grace" value="${ps.default_grace_days ?? 3}" />
+
+        <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="saveSuperPlatformSettings()">حفظ ونشر على جميع المواقع فوراً</button>
+      `;
+    }
+
+    async function saveSuperPlatformSettings() {
+      const ps = dbData.platform_settings;
+      ps.platform_name = document.getElementById("ps_pname").value.trim();
+      ps.creator_name = document.getElementById("ps_cname").value.trim();
+      ps.creator_whatsapp = document.getElementById("ps_cwp").value.trim();
+      ps.creator_link = document.getElementById("ps_clink").value.trim();
+      ps.promo_tagline = document.getElementById("ps_tag").value.trim();
+      ps.shamcash_code = document.getElementById("ps_sc_code").value.trim();
+      ps.shamcash_name = document.getElementById("ps_sc_name").value.trim();
+      ps.monthly_fee_text = document.getElementById("ps_fee").value.trim();
+      ps.default_grace_days = Number(document.getElementById("ps_grace").value || 3);
+      await saveWithAlert(false);
+    }
+
+    function renderSuperMaintenanceTab() {
+      document.getElementById("superTabBody").innerHTML = `
+        <h4 class="sec-title">النسخ الاحتياطي وتصفير قواعد البيانات</h4>
+        <p style="font-size:0.86rem;color:var(--muted);">يمكنك تحميل نسخة احتياطية كاملة لكل المتاجر والإعدادات، أو تصفير سجلات الطلبات والزبائن على مستوى المنصة بالكامل.</p>
+        <div class="row-actions">
+          <button class="btn btn-dark" onclick="exportFullBackup()">📥 تحميل نسخة احتياطية (JSON)</button>
+          <button class="btn btn-danger" onclick="resetAllPlatformOrders()">🗑️ تصفير طلبات جميع المتاجر</button>
+          <button class="btn btn-danger" onclick="resetAllPlatformCustomers()">🗑️ تصفير زبائن جميع المتاجر</button>
+        </div>
+      `;
+    }
+
+    function exportFullBackup() {
+      const blob = new Blob([JSON.stringify(dbData, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `smart_stores_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    async function resetAllPlatformOrders() {
+      if (!confirm("تحذير: سيتم تصفير سجل الطلبات لجميع المتاجر في المنصة! هل أنت متأكد؟")) return;
+      Object.values(dbData.stores || {}).forEach(st => { st.orders = []; });
+      await saveWithAlert(true);
+      alert("تم تصفير طلبات جميع المتاجر بنجاح.");
+    }
+
+    async function resetAllPlatformCustomers() {
+      if (!confirm("تحذير: سيتم تصفير سجل الزبائن لجميع المتاجر في المنصة! هل أنت متأكد؟")) return;
+      Object.values(dbData.stores || {}).forEach(st => { st.customers = {}; });
+      await saveWithAlert(true);
+      alert("تم تصفير سجلات الزبائن لجميع المتاجر بنجاح.");
+    }
+
+    async function saveWithAlert(silent) {
+      const ok = await DB_ADAPTER.save(dbData);
+      if (ok) {
+        if (!silent) alert("تم الحفظ والتحديث بنجاح!");
       } else {
-        alert("تعذر الحفظ التلقائي. تأكد من صلاحية Gists في التوكن.");
-        return false;
+        alert("تعذر الحفظ. تأكد من صلاحية التوكن.");
       }
     }
 
