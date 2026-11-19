@@ -69,7 +69,7 @@
 
   <script>
     const GIST_ID = "29a880a7f2a8e52e7ca8192168eae9e9";
-    const RAW_URL = `https://gist.githubusercontent.com/Abo7na/${GIST_ID}/raw/stores.json?t=${Date.now()}`;
+    const API_URL = `https://api.github.com/gists/${GIST_ID}`;
     const params = new URLSearchParams(location.search);
     const storeId = params.get("store") || "bakery1";
 
@@ -81,8 +81,12 @@
 
     async function init() {
       try {
-        const res = await fetch(RAW_URL);
-        dbData = await res.json();
+        const res = await fetch(API_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const gist = await res.json();
+        const fileObj = gist.files["stores.json"] || Object.values(gist.files)[0];
+        if (!fileObj || !fileObj.content) throw new Error("ملف stores.json فارغ أو غير موجود");
+        dbData = JSON.parse(fileObj.content);
         store = dbData.stores[storeId];
         if (!store) {
           document.getElementById("storeName").textContent = "المتجر غير موجود";
@@ -93,7 +97,8 @@
         checkSubscription();
         renderMenu();
       } catch (e) {
-        document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">تعذر تحميل بيانات المتجر.</div>`;
+        document.getElementById("storeName").textContent = "تعذر التحميل";
+        document.getElementById("storeContent").innerHTML = `<div class="alert alert-err">سبب المشكلة: ${e.message}</div>`;
       }
     }
 
@@ -234,7 +239,7 @@
         it.price = Number(document.getElementById(`price_${idx}`).value);
         it.available = document.getElementById(`avail_${idx}`).checked;
       });
-      const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      const res = await fetch(API_URL, {
         method: "PATCH",
         headers: { "Authorization": `Bearer ${tok}`, "Content-Type": "application/json" },
         body: JSON.stringify({ files: { "stores.json": { content: JSON.stringify(dbData, null, 2) } } })
